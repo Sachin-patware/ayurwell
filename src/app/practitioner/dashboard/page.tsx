@@ -1,6 +1,5 @@
 import {
   Activity,
-  BarChart,
   CalendarCheck,
   PlusCircle,
   Users,
@@ -24,7 +23,6 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { appointments, patients } from '@/lib/placeholder-data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import GenerateDietPlanDialog from './components/generate-diet-plan';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -42,7 +40,6 @@ export default function PractitionerDashboard() {
                     Add Patient
                 </Link>
             </Button>
-            <GenerateDietPlanDialog />
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">

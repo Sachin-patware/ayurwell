@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Leaf, FileText, Edit } from 'lucide-react';
 import WeeklyProgressChart from '@/app/patient/dashboard/components/weekly-progress-chart';
-import GenerateDietPlanDialog from '../../dashboard/components/generate-diet-plan';
+import Link from 'next/link';
 
 export default function PatientDetailPage() {
   const params = useParams();
@@ -79,7 +79,12 @@ export default function PatientDetailPage() {
                 <CardTitle>Actions</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-2">
-                <GenerateDietPlanDialog />
+                <Button asChild>
+                  <Link href={`/practitioner/diet-plans/generate?patientId=${patient.id}`}>
+                      <Leaf className="mr-2 h-4 w-4"/>
+                      Generate Diet Plan
+                  </Link>
+                </Button>
                  <Button variant="outline">
                     <FileText className="mr-2 h-4 w-4"/>
                     View Full History

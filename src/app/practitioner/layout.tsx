@@ -7,6 +7,7 @@ import {
     LogOut,
     Menu,
     PlusCircle,
+    BookHeart,
 } from 'lucide-react';
 import Link from 'next/link';
 import { ReactNode } from 'react';
@@ -33,7 +34,7 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
         { icon: LayoutDashboard, label: 'Dashboard', href: '/practitioner/dashboard' },
         { icon: Users, label: 'Patients', href: '/practitioner/patients' },
         { icon: PlusCircle, label: 'Add Patient', href: '/practitioner/add-patient' },
-        { icon: ClipboardList, label: 'Diet Plans', href: '#' },
+        { icon: BookHeart, label: 'Diet Plans', href: '/practitioner/diet-plans' },
         { icon: BarChart3, label: 'Reports', href: '/practitioner/reports' },
         { icon: Settings, label: 'Settings', href: '#' },
     ];
