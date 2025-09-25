@@ -1,0 +1,132 @@
+import {
+    LayoutDashboard,
+    Users,
+    ClipboardList,
+    BarChart3,
+    Settings,
+    LogOut,
+    Menu,
+} from 'lucide-react';
+import Link from 'next/link';
+import { ReactNode } from 'react';
+import Image from 'next/image';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Logo } from '@/components/logo';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { practitioner } from '@/lib/placeholder-data';
+
+export default function PractitionerLayout({ children }: { children: ReactNode }) {
+    const practitionerAvatar = PlaceHolderImages.find(img => img.id === practitioner.avatar);
+
+    const navItems = [
+        { icon: LayoutDashboard, label: 'Dashboard', href: '/practitioner/dashboard' },
+        { icon: Users, label: 'Patients', href: '#' },
+        { icon: ClipboardList, label: 'Diet Plans', href: '#' },
+        { icon: BarChart3, label: 'Reports', href: '#' },
+        { icon: Settings, label: 'Settings', href: '#' },
+    ];
+
+    return (
+        <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+            <div className="hidden border-r bg-card md:block">
+                <div className="flex h-full max-h-screen flex-col gap-2">
+                    <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+                        <Logo />
+                    </div>
+                    <div className="flex-1">
+                        <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+                            {navItems.map((item) => (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted"
+                                >
+                                    <item.icon className="h-4 w-4" />
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </nav>
+                    </div>
+                    <div className="mt-auto p-4">
+                        <div className="flex items-center gap-3">
+                             <Avatar className="h-10 w-10">
+                                {practitionerAvatar && <AvatarImage src={practitionerAvatar.imageUrl} alt={practitioner.name} data-ai-hint={practitionerAvatar.imageHint} />}
+                                <AvatarFallback>{practitioner.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-col">
+                                <span className="font-semibold">{practitioner.name}</span>
+                                <span className="text-xs text-muted-foreground">{practitioner.email}</span>
+                            </div>
+                            <Button variant="ghost" size="icon" className="ml-auto">
+                                <LogOut className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="flex flex-col">
+                <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+                                <Menu className="h-5 w-5" />
+                                <span className="sr-only">Toggle navigation menu</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="flex flex-col">
+                            <nav className="grid gap-2 text-lg font-medium">
+                                <div className="mb-4">
+                                  <Logo />
+                                </div>
+                                {navItems.map((item) => (
+                                    <Link
+                                        key={item.label}
+                                        href={item.href}
+                                        className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted"
+                                    >
+                                        <item.icon className="h-5 w-5" />
+                                        {item.label}
+                                    </Link>
+                                ))}
+                            </nav>
+                        </SheetContent>
+                    </Sheet>
+                    <div className="w-full flex-1" />
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="secondary" size="icon" className="rounded-full">
+                                <Avatar>
+                                    {practitionerAvatar && <AvatarImage src={practitionerAvatar.imageUrl} alt={practitioner.name} data-ai-hint={practitionerAvatar.imageHint} />}
+                                    <AvatarFallback>{practitioner.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span className="sr-only">Toggle user menu</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>Settings</DropdownMenuItem>
+                            <DropdownMenuItem>Support</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem>Logout</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </header>
+                <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+                    {children}
+                </main>
+            </div>
+        </div>
+    );
+}
