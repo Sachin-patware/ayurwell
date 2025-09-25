@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { dietPlan, patients } from "@/lib/placeholder-data";
 import { UtensilsCrossed, Sparkles, Loader2, Lightbulb } from "lucide-react";
 import { useState } from "react";
+// This is the Genkit flow we are using to get meal suggestions.
 import { suggestAlternativeMeals } from "@/ai/flows/suggest-alternative-meals";
 import {
   Dialog,
@@ -19,11 +20,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { DialogFooter } from "@/components/ui/dialog";
 
 
 type Meal = {
@@ -52,6 +52,7 @@ export default function DietPlan() {
     setPlan(newPlan);
   };
 
+  // This function is called when the "Suggest Alternatives" button is clicked.
   const handleSuggestionClick = async (meal: Meal) => {
     setIsSuggesting(true);
     setSuggestions(null);
@@ -65,6 +66,7 @@ export default function DietPlan() {
             Dosha Imbalance: ${patient.dosha}
         `;
 
+        // We call the suggestAlternativeMeals flow with the patient's data.
         const result = await suggestAlternativeMeals({
             patientProfile,
             currentMeal: `${meal.meal}: ${meal.food}`,
@@ -72,6 +74,7 @@ export default function DietPlan() {
             dietaryRestrictions: 'None', // Placeholder
         });
         
+        // The results are stored in the component's state to be displayed in the dialog.
         setSuggestions(result);
 
     } catch (error) {
@@ -106,6 +109,7 @@ export default function DietPlan() {
               <AccordionTrigger className="font-semibold text-lg hover:no-underline">
                 <div className="flex items-center justify-between w-full pr-2">
                     <span>{item.meal}</span>
+                    {/* This button triggers the AI suggestion flow. */}
                      <Button variant="ghost" size="sm" onClick={() => handleSuggestionClick(item)}>
                         <Sparkles className="mr-2 h-4 w-4 text-accent"/>
                         Suggest Alternatives
@@ -132,6 +136,7 @@ export default function DietPlan() {
       </CardContent>
     </Card>
 
+    {/* This dialog displays the loading state and the meal suggestions. */}
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[480px]">
             <DialogHeader>
