@@ -6,6 +6,7 @@ import {
     Settings,
     LogOut,
     Menu,
+    PlusCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { ReactNode } from 'react';
@@ -31,6 +32,7 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', href: '/practitioner/dashboard' },
         { icon: Users, label: 'Patients', href: '#' },
+        { icon: PlusCircle, label: 'Add Patient', href: '/practitioner/add-patient' },
         { icon: ClipboardList, label: 'Diet Plans', href: '#' },
         { icon: BarChart3, label: 'Reports', href: '#' },
         { icon: Settings, label: 'Settings', href: '#' },

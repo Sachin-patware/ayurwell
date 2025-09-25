@@ -2,6 +2,7 @@ import {
   Activity,
   BarChart,
   CalendarCheck,
+  PlusCircle,
   Users,
 } from 'lucide-react';
 import {
@@ -24,6 +25,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { appointments, patients } from '@/lib/placeholder-data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import GenerateDietPlanDialog from './components/generate-diet-plan';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function PractitionerDashboard() {
   const patientAvatars = new Map(PlaceHolderImages.filter(img => img.id.startsWith('avatar')).map(img => [img.id, img]));
@@ -32,7 +35,15 @@ export default function PractitionerDashboard() {
     <>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold font-headline">Dashboard</h1>
-        <GenerateDietPlanDialog />
+        <div className="flex gap-2">
+            <Button asChild>
+                <Link href="/practitioner/add-patient">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Patient
+                </Link>
+            </Button>
+            <GenerateDietPlanDialog />
+        </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
         <Card className="shadow-md hover:shadow-lg transition-shadow">
