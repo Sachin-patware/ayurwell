@@ -71,7 +71,7 @@ export default function GenerateDietPlanPage() {
         
         // Store the plan in localStorage to pass it to the edit page.
         // In a real app, this would be fetched from the database on the edit page.
-        localStorage.setItem(newPlanId, result.dietPlan);
+        localStorage.setItem(newPlanId, JSON.stringify(result.dietPlan));
 
         router.push(`/practitioner/diet-plans/${newPlanId}/edit?patientId=${values.patientId}`);
 

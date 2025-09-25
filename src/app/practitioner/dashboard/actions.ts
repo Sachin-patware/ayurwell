@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import { generateInitialDietPlan } from "@/ai/flows/generate-initial-diet-plan";
+import { GenerateInitialDietPlanOutput, generateInitialDietPlan } from "@/ai/flows/generate-initial-diet-plan";
 import { patients } from "@/lib/placeholder-data";
 import { z } from "zod";
 
@@ -11,7 +11,7 @@ const formSchema = z.object({
 
 type GenerateDietPlanResult = {
   success: boolean;
-  dietPlan?: string | null;
+  dietPlan?: GenerateInitialDietPlanOutput['dietPlan'] | null;
   error?: string;
 };
 
