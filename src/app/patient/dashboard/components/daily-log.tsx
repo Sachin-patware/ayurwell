@@ -13,18 +13,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { BookCheck, Droplets } from "lucide-react";
+import { BookCheck, Droplets, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 export default function DailyLog() {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLog = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-        title: "Log Submitted!",
-        description: "Your progress for today has been saved.",
-        className: "bg-primary text-primary-foreground"
-    });
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+        toast({
+            title: "Log Submitted!",
+            description: "Your progress for today has been saved.",
+            className: "bg-primary text-primary-foreground"
+        });
+        setIsLoading(false);
+    }, 1000);
   }
 
   return (
@@ -66,7 +74,16 @@ export default function DailyLog() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button className="w-full" type="submit">Log My Day</Button>
+          <Button className="w-full" type="submit" disabled={isLoading}>
+            {isLoading ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                </>
+            ) : (
+                "Log My Day"
+            )}
+            </Button>
         </CardFooter>
       </form>
     </Card>

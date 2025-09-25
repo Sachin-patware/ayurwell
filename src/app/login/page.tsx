@@ -60,11 +60,11 @@ export default function LoginPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email-practitioner">Email</Label>
-                    <Input id="email-practitioner" type="email" placeholder="m@example.com" required />
+                    <Input id="email-practitioner" type="email" placeholder="m@example.com" required defaultValue="dr.anjali@ayurwell.com" />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password-practitioner">Password</Label>
-                    <Input id="password-practitioner" type="password" required />
+                    <Input id="password-practitioner" type="password" required defaultValue="password" />
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-4">
@@ -91,15 +91,15 @@ export default function LoginPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email-patient">Email</Label>
-                  <Input id="email-patient" type="email" placeholder="patient@example.com" required />
+                  <Input id="email-patient" type="email" placeholder="patient@example.com" required defaultValue="priya.sharma@example.com" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password-patient">Password</Label>
-                  <Input id="password-patient" type="password" required />
+                  <Input id="password-patient" type="password" required defaultValue="password" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="doctor-id">Doctor ID</Label>
-                  <Input id="doctor-id" type="text" placeholder="D12345" required />
+                  <Input id="doctor-id" type="text" placeholder="D12345" required defaultValue="D12345" />
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col gap-4">

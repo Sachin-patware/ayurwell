@@ -13,7 +13,7 @@ import { Logo } from "@/components/logo";
 import { patients } from "@/lib/placeholder-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Link from "next/link";
-import { Bell, LogOut } from "lucide-react";
+import { Bell, LogOut, User, History } from "lucide-react";
 
 export default function PatientLayout({ children }: { children: ReactNode }) {
     // For demo, we'll use the first patient
@@ -43,11 +43,21 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>{patient.name}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>My Profile</DropdownMenuItem>
-                            <DropdownMenuItem>History</DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="#" className="flex items-center cursor-pointer">
+                                    <User className="mr-2 h-4 w-4" />
+                                    <span>My Profile</span>
+                                </Link>
+                            </DropdownMenuItem>
+                             <DropdownMenuItem asChild>
+                                <Link href="#" className="flex items-center cursor-pointer">
+                                    <History className="mr-2 h-4 w-4" />
+                                    <span>History</span>
+                                </Link>
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                                <Link href="/login" className="flex items-center">
+                                <Link href="/login" className="flex items-center cursor-pointer">
                                     <LogOut className="mr-2 h-4 w-4" />
                                     <span>Logout</span>
                                 </Link>

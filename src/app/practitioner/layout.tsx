@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { ReactNode } from 'react';
-import Image from 'next/image';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -59,19 +58,10 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                         </nav>
                     </div>
                     <div className="mt-auto p-4">
-                        <div className="flex items-center gap-3">
-                             <Avatar className="h-10 w-10">
-                                {practitionerAvatar && <AvatarImage src={practitionerAvatar.imageUrl} alt={practitioner.name} data-ai-hint={practitionerAvatar.imageHint} />}
-                                <AvatarFallback>{practitioner.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col">
-                                <span className="font-semibold">{practitioner.name}</span>
-                                <span className="text-xs text-muted-foreground">{practitioner.email}</span>
-                            </div>
-                            <Button variant="ghost" size="icon" className="ml-auto">
-                                <LogOut className="h-4 w-4" />
-                            </Button>
-                        </div>
+                       <Link href="/login" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted -mx-3">
+                            <LogOut className="h-4 w-4" />
+                            <span>Logout</span>
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -85,10 +75,10 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" className="flex flex-col">
+                             <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6 -mx-6">
+                                <Logo />
+                            </div>
                             <nav className="grid gap-2 text-lg font-medium">
-                                <div className="mb-4">
-                                  <Logo />
-                                </div>
                                 {navItems.map((item) => (
                                     <Link
                                         key={item.label}
@@ -100,6 +90,12 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                                     </Link>
                                 ))}
                             </nav>
+                             <div className="mt-auto">
+                                <Link href="/login" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted">
+                                    <LogOut className="h-5 w-5" />
+                                    Logout
+                                </Link>
+                            </div>
                         </SheetContent>
                     </Sheet>
                     <div className="w-full flex-1" />
@@ -114,12 +110,21 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                            <DropdownMenuLabel>{practitioner.name}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Settings</DropdownMenuItem>
-                            <DropdownMenuItem>Support</DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="#" className="cursor-pointer">Settings</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link href="#" className="cursor-pointer">Support</Link>
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Logout</DropdownMenuItem>
+                             <DropdownMenuItem asChild>
+                                <Link href="/login" className="flex items-center cursor-pointer">
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    <span>Logout</span>
+                                </Link>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </header>
