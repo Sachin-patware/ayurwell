@@ -9,9 +9,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { dietPlan } from "@/lib/placeholder-data";
-import { UtensilsCrossed, Sparkles } from "lucide-react";
+import { dietPlan, patients } from "@/lib/placeholder-data";
+import { UtensilsCrossed, Sparkles, Loader2, Lightbulb } from "lucide-react";
 import { useState } from "react";
+import { suggestAlternativeMeals } from "@/ai/flows/suggest-alternative-meals";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 
 type Meal = {
   meal: string;
@@ -23,9 +36,15 @@ type DietDay = Meal[];
 
 // For demo, we'll just use one day's plan
 const todayPlan: DietDay = dietPlan.monday;
+const patient = patients[0];
 
 export default function DietPlan() {
   const [plan, setPlan] = useState(todayPlan);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+  const [suggestions, setSuggestions] = useState<{alternativeMeals: string[], reasoning: string} | null>(null);
+  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleCheck = (index: number, checked: boolean) => {
     const newPlan = [...plan];
@@ -33,7 +52,43 @@ export default function DietPlan() {
     setPlan(newPlan);
   };
 
+  const handleSuggestionClick = async (meal: Meal) => {
+    setIsSuggesting(true);
+    setSuggestions(null);
+    setSelectedMeal(meal);
+    setIsDialogOpen(true);
+
+    try {
+        const patientProfile = `
+            Name: ${patient.name}
+            Prakriti: ${patient.prakriti}
+            Dosha Imbalance: ${patient.dosha}
+        `;
+
+        const result = await suggestAlternativeMeals({
+            patientProfile,
+            currentMeal: `${meal.meal}: ${meal.food}`,
+            availableIngredients: 'Rice, lentils, seasonal vegetables, basic spices', // Placeholder
+            dietaryRestrictions: 'None', // Placeholder
+        });
+        
+        setSuggestions(result);
+
+    } catch (error) {
+        console.error("Failed to get suggestions:", error);
+        toast({
+            variant: "destructive",
+            title: "Suggestion Failed",
+            description: "Could not fetch meal alternatives at this time.",
+        });
+    } finally {
+        setIsSuggesting(false);
+    }
+  }
+
+
   return (
+    <>
     <Card className="shadow-md">
       <CardHeader>
         <CardTitle className="flex items-center justify-between gap-2">
@@ -41,10 +96,6 @@ export default function DietPlan() {
             <UtensilsCrossed className="text-primary" />
             Today's Diet Plan
           </div>
-           <Button variant="ghost" size="sm">
-              <Sparkles className="mr-2 h-4 w-4 text-accent"/>
-              Suggest Alternatives
-           </Button>
         </CardTitle>
         <CardDescription>Check off meals as you complete them. Need a change? Ask for AI-powered suggestions.</CardDescription>
       </CardHeader>
@@ -53,7 +104,13 @@ export default function DietPlan() {
           {plan.map((item, index) => (
             <AccordionItem key={index} value={`item-${index+1}`}>
               <AccordionTrigger className="font-semibold text-lg hover:no-underline">
-                {item.meal}
+                <div className="flex items-center justify-between w-full pr-2">
+                    <span>{item.meal}</span>
+                     <Button variant="ghost" size="sm" onClick={() => handleSuggestionClick(item)}>
+                        <Sparkles className="mr-2 h-4 w-4 text-accent"/>
+                        Suggest Alternatives
+                    </Button>
+                </div>
               </AccordionTrigger>
               <AccordionContent>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-background">
@@ -74,5 +131,52 @@ export default function DietPlan() {
         </Accordion>
       </CardContent>
     </Card>
+
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+            <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                    <Sparkles className="text-accent" />
+                    Meal Alternatives for {selectedMeal?.meal}
+                </DialogTitle>
+                <DialogDescription>
+                    AI-powered suggestions based on your profile and available ingredients.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                {isSuggesting ? (
+                    <div className="flex flex-col items-center justify-center gap-2 min-h-[200px]">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <p className="text-muted-foreground">Finding tasty alternatives...</p>
+                    </div>
+                ) : suggestions ? (
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="font-semibold mb-2">Suggested Meals:</h3>
+                            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                                {suggestions.alternativeMeals.map((meal, i) => <li key={i}>{meal}</li>)}
+                            </ul>
+                        </div>
+                        <Alert>
+                            <Lightbulb className="h-4 w-4"/>
+                            <AlertTitle>Reasoning</AlertTitle>
+                            <AlertDescription>
+                                {suggestions.reasoning}
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center gap-2 min-h-[200px] text-muted-foreground">
+                        <p>No suggestions available right now.</p>
+                    </div>
+                )}
+            </div>
+            <DialogFooter>
+                <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>Close</Button>
+            </DialogFooter>
+        </DialogContent>
+    </Dialog>
+
+    </>
   );
 }

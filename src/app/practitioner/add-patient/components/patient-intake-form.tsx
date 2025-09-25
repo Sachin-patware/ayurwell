@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { BasicInfoStep } from "./basic-info-step";
 import { AyurvedicStep } from "./ayurvedic-step";
 import { MedicalHistoryStep } from "./medical-history-step";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   // Basic Info
@@ -44,18 +45,19 @@ const steps = [
 export function PatientIntakeForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const { toast } = useToast();
+  const router = useRouter();
   const methods = useForm<PatientIntakeFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      age: 0,
+      name: "Priya Sharma",
+      age: 32,
       waterIntake: 2000,
       bowelMovement: "normal",
-      prakriti: "vata-pitta",
+      prakriti: "Vata-Pitta",
       dosha: "vata",
-      observations: "",
-      medicalHistory: "",
-      allergies: "",
+      observations: "Patient reports feeling anxious and has dry skin.",
+      medicalHistory: "No major illnesses. Had appendicitis surgery in 2010.",
+      allergies: "Mild lactose intolerance.",
     },
   });
 
@@ -63,13 +65,20 @@ export function PatientIntakeForm() {
 
   const processForm = async (data: PatientIntakeFormValues) => {
     console.log("Saving patient data...", data);
-    // TODO: Add Firestore saving logic here
+    // This is where you would save to Firestore.
+    // We'll simulate it and then redirect.
+    
+    // In a real app, you'd get the new patient's ID from Firestore
+    const newPatientId = "1"; // Using existing ID for demo purposes
+
     toast({
       title: "Patient Saved!",
       description: `${data.name} has been added to your patient list.`,
       className: "bg-primary text-primary-foreground",
     });
-    // TODO: Redirect to diet chart generator
+
+    // Redirect to the diet plan generator for the new patient
+    router.push(`/practitioner/diet-plans/generate?patientId=${newPatientId}`);
   };
 
   const nextStep = async () => {
@@ -143,7 +152,7 @@ export function PatientIntakeForm() {
                 </Button>
                 {currentStep === steps.length - 1 ? (
                     <Button type="submit">
-                        Save Patient <Check className="ml-2 h-4 w-4" />
+                        Save Patient & Create Plan <Check className="ml-2 h-4 w-4" />
                     </Button>
                 ) : (
                     <Button type="button" onClick={nextStep}>

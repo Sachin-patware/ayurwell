@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Droplets } from "lucide-react";
 
 export function BasicInfoStep() {
-  const { control } = useFormContext<PatientIntakeFormValues>();
+  const { control, setValue } = useFormContext<PatientIntakeFormValues>();
 
   return (
     <Card className="shadow-md">
@@ -44,7 +44,7 @@ export function BasicInfoStep() {
                         <FormItem>
                         <FormLabel>Age</FormLabel>
                         <FormControl>
-                            <Input type="number" placeholder="e.g., 34" {...field} />
+                            <Input type="number" placeholder="e.g., 34" {...field} onChange={event => field.onChange(+event.target.value)} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -62,7 +62,7 @@ export function BasicInfoStep() {
                         Average Water Intake (ml)
                     </FormLabel>
                     <FormControl>
-                        <Input type="number" placeholder="e.g., 2000" {...field} />
+                        <Input type="number" placeholder="e.g., 2000" {...field} onChange={event => field.onChange(+event.target.value)} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
