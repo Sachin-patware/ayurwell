@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2, Sparkles } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -41,9 +41,9 @@ const formSchema = z.object({
 });
 
 export default function GenerateDietPlanPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const patientIdFromQuery = searchParams.get('patientId') || '';
-  const [generatedPlan, setGeneratedPlan] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -51,22 +51,30 @@ export default function GenerateDietPlanPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       patientId: patientIdFromQuery,
-      constraints: 'Goal is to balance the dominant dosha. Include warm, cooked meals. Avoid processed foods and sugar.',
+      constraints: 'Goal is to balance the dominant dosha. Include warm, cooked meals. Avoid processed foods and sugar. The diet should be for 7 days.',
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    setGeneratedPlan(null);
     try {
       const result = await generateDietPlanAction(values);
       if (result.success && result.dietPlan) {
-        setGeneratedPlan(result.dietPlan);
         toast({
           title: 'Diet Plan Generated',
           description: `Successfully created a new diet plan for ${patients.find(p => p.id === values.patientId)?.name}.`,
           className: 'bg-primary text-primary-foreground',
         });
+        
+        // TODO: In a real app, this would be a real ID from the database.
+        const newPlanId = `plan-${Date.now()}`;
+        
+        // Store the plan in localStorage to pass it to the edit page.
+        // In a real app, this would be fetched from the database on the edit page.
+        localStorage.setItem(newPlanId, result.dietPlan);
+
+        router.push(`/practitioner/diet-plans/${newPlanId}/edit?patientId=${values.patientId}`);
+
       } else {
         throw new Error(result.error || 'Failed to generate diet plan.');
       }
@@ -83,7 +91,7 @@ export default function GenerateDietPlanPage() {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="container mx-auto max-w-2xl">
       <Card className="shadow-md">
         <CardHeader>
           <CardTitle className="font-headline text-2xl flex items-center gap-2">
@@ -92,7 +100,7 @@ export default function GenerateDietPlanPage() {
           </CardTitle>
           <CardDescription>
             Select a patient and provide constraints to generate a personalized
-            Ayurvedic diet plan.
+            Ayurvedic diet plan. The more detailed your constraints, the better the result.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -127,10 +135,10 @@ export default function GenerateDietPlanPage() {
                     name="constraints"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Constraints & Goals</FormLabel>
+                        <FormLabel>Constraints, Goals & Duration</FormLabel>
                         <FormControl>
                         <Textarea
-                            placeholder="e.g., Prefers warm meals, gluten-free, goal is to reduce Pitta..."
+                            placeholder="e.g., Prefers warm meals, gluten-free, goal is to reduce Pitta. Generate a 7-day plan."
                             rows={4}
                             {...field}
                         />
@@ -146,36 +154,11 @@ export default function GenerateDietPlanPage() {
                         Generating...
                     </>
                     ) : (
-                    'Generate Plan'
+                    'Generate & Edit Plan'
                     )}
                 </Button>
                 </form>
             </Form>
-        </CardContent>
-      </Card>
-      <Card className="shadow-md">
-        <CardHeader>
-            <CardTitle>Generated Plan</CardTitle>
-            <CardDescription>Review the plan below. You can edit it before saving.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            {isLoading ? (
-                <div className="flex items-center justify-center h-64">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary"/>
-                </div>
-            ) : generatedPlan ? (
-                <div className="prose prose-sm max-w-none text-foreground bg-muted p-4 rounded-md min-h-64">
-                    <pre className="whitespace-pre-wrap font-body text-sm bg-transparent border-none p-0">{generatedPlan}</pre>
-                </div>
-            ) : (
-                 <div className="flex items-center justify-center text-muted-foreground h-64">
-                    <p>The generated diet plan will appear here.</p>
-                </div>
-            )}
-            <div className="mt-6 flex justify-end gap-2">
-                <Button variant="outline" disabled={!generatedPlan}>Edit</Button>
-                <Button disabled={!generatedPlan}>Save & Notify Patient</Button>
-            </div>
         </CardContent>
       </Card>
     </div>

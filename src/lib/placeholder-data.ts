@@ -16,6 +16,13 @@ export type Appointment = {
   status: 'Confirmed' | 'Pending' | 'Completed';
 };
 
+export type DietPlanSummary = {
+  id: string;
+  patientId: string;
+  patientName: string;
+  creationDate: string;
+}
+
 export const patients: Patient[] = [
   {
     id: '1',
@@ -98,3 +105,18 @@ export const practitioner = {
     email: "dr.anjali@ayurwell.com",
     avatar: "practitioner-avatar",
 }
+
+export const dietPlans: DietPlanSummary[] = [
+    {
+        id: 'plan-1',
+        patientId: '1',
+        patientName: 'Priya Sharma',
+        creationDate: '2024-07-28',
+    },
+    {
+        id: 'plan-2',
+        patientId: '2',
+        patientName: 'Rohan Gupta',
+        creationDate: '2024-07-27',
+    }
+];
