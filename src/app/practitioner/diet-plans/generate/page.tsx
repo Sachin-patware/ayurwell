@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -40,7 +40,7 @@ const formSchema = z.object({
   constraints: z.string().min(10, 'Please provide some constraints or goals.'),
 });
 
-export default function GenerateDietPlanPage() {
+function GenerateDietPlanContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const patientIdFromQuery = searchParams.get('patientId') || '';
@@ -162,5 +162,13 @@ export default function GenerateDietPlanPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function GenerateDietPlanPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <GenerateDietPlanContent />
+    </Suspense>
   );
 }
