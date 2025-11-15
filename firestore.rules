@@ -100,14 +100,23 @@ service cloud.firestore {
     
     // appointments - Scheduling between patient and doctor
     match /appointments/{appointmentId} {
-      // Patient or doctor can create an appointment.
-      allow create: if isOwner(request.resource.data.patientId) || isOwner(get(/databases/$(database)/documents/doctors/$(request.resource.data.doctorId)).data.userId);
-      // Patient, doctor, or admin can view.
-      allow get: if isOwner(get(/databases/$(database)/documents/appointments/$(appointmentId)).data.patientId) || isOwner(get(/databases/$(database)/documents/doctors/$(get(/databases/$(database)/documents/appointments/$(appointmentId)).data.doctorId)).data.userId) || isRole('admin');
+      // A patient can create their own appointment.
+      allow create: if isOwner(request.resource.data.patientId);
+      // The patient, their assigned doctor, or an admin can view appointments.
+      allow get, list: if isOwner(request.resource.data.patientId) || isDoctorForPatient(request.resource.data.patientId) || isRole('admin');
       // Patient can cancel, doctor can update status.
-      allow update: if isOwner(get(/databases/$(database)/documents/appointments/$(appointmentId)).data.patientId) || isOwner(get(/databases/$(database)/documents/doctors/$(get(/databases/$(database)/documents/appointments/$(appointmentId)).data.doctorId)).data.userId) || isRole('admin');
+      allow update: if isOwner(request.resource.data.patientId) || isDoctorForPatient(request.resource.data.patientId) || isRole('admin');
       allow delete: if isRole('admin');
-      allow list: if isRole('admin');
+    }
+
+    // dailyLogs - Patient's daily progress tracking
+    match /dailyLogs/{logId} {
+        // A patient can create their own log entry.
+        allow create: if isOwner(request.resource.data.userId);
+        // A patient can read their own logs. A doctor can read their patient's logs.
+        allow list, get: if isOwner(request.resource.data.userId) || isDoctorForPatient(request.resource.data.userId) || isRole('admin');
+        // Logs are immutable from the client.
+        allow update, delete: if false;
     }
   }
 }

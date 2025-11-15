@@ -113,7 +113,21 @@
         "datetime": { "type": "string", "format": "date-time" },
         "status": { "type": "string", "enum": ["scheduled", "completed", "cancelled"] }
       },
-      "required": ["appointmentId", "doctorId", "patientId", "datetime", "status"]
+      "required": ["doctorId", "patientId", "datetime", "status"]
+    },
+     "DailyLog": {
+      "title": "DailyLog",
+      "description": "A patient's daily health and progress log.",
+      "type": "object",
+      "properties": {
+        "logId": { "type": "string" },
+        "userId": { "type": "string", "description": "The patient's user ID." },
+        "date": { "type": "string", "format": "date-time" },
+        "energyLevel": { "type": "number", "description": "Energy level from 1-10." },
+        "digestion": { "type": "string", "enum": ["good", "fair", "poor"] },
+        "sleepQuality": { "type": "string", "enum": ["good", "fair", "poor"] }
+      },
+      "required": ["userId", "date", "energyLevel", "digestion", "sleepQuality"]
     }
   },
   "auth": {
@@ -151,6 +165,10 @@
     "/appointments/{appointmentId}": {
       "schema": { "$ref": "#/entities/Appointment" },
       "description": "Stores all appointments."
+    },
+    "/dailyLogs/{logId}": {
+        "schema": { "$ref": "#/entities/DailyLog" },
+        "description": "Stores daily progress logs for patients."
     }
   }
 }
