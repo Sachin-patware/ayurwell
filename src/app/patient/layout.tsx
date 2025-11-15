@@ -15,8 +15,19 @@ import { patients } from "@/lib/placeholder-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Link from "next/link";
 import { Bell, LogOut, User, History } from "lucide-react";
+import { useAuth } from "@/firebase";
+import { useRouter } from "next/navigation";
+import { signOut } from "firebase/auth";
 
 export default function PatientLayout({ children }: { children: ReactNode }) {
+    const auth = useAuth();
+    const router = useRouter();
+    
+    const handleLogout = async () => {
+        await signOut(auth);
+        router.push('/login');
+    };
+
     // For demo, we'll use the first patient
     const patient = patients[0];
     const patientAvatar = PlaceHolderImages.find(img => img.id === patient.avatar);
@@ -42,7 +53,7 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>{patient.name}</DropdownMenuLabel>
+                            <DropdownMenuLabel>{auth.currentUser?.displayName || patient.name}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <Link href="#" className="flex items-center cursor-pointer">
@@ -57,11 +68,9 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                                <Link href="/login" className="flex items-center cursor-pointer">
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    <span>Logout</span>
-                                </Link>
+                            <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                <span>Logout</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

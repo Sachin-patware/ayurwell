@@ -1,3 +1,5 @@
+'use client';
+
 import { ReactNode } from "react";
 import {
   DropdownMenu,
@@ -8,16 +10,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
-import Link from "next/link";
 import { Bell, LogOut, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/firebase";
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-    // In a real app, this data would come from the logged-in user's profile
+    const auth = useAuth();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await signOut(auth);
+        router.push('/login');
+    };
+
     const adminUser = {
-        name: "Admin User",
-        email: "admin@ayurwell.com"
+        name: auth.currentUser?.displayName || "Admin User",
+        email: auth.currentUser?.email || "admin@ayurwell.com"
     }
 
     return (
@@ -46,11 +57,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>{adminUser.name}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                                <Link href="/login" className="flex items-center cursor-pointer">
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    <span>Logout</span>
-                                </Link>
+                            <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                <span>Logout</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

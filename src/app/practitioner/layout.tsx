@@ -1,11 +1,11 @@
+'use client';
+
 import {
     LayoutDashboard,
     Users,
-    ClipboardList,
     Settings,
     LogOut,
     Menu,
-    PlusCircle,
     BookHeart,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -25,8 +25,19 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Logo } from '@/components/logo';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { practitioner } from '@/lib/placeholder-data';
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export default function PractitionerLayout({ children }: { children: ReactNode }) {
+    const auth = useAuth();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await signOut(auth);
+        router.push('/login');
+    };
+
     const practitionerAvatar = PlaceHolderImages.find(img => img.id === practitioner.avatar);
 
     const navItems = [
@@ -57,10 +68,10 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                         </nav>
                     </div>
                     <div className="mt-auto p-4">
-                       <Link href="/login" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted -mx-3">
+                       <button onClick={handleLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted -mx-3">
                             <LogOut className="h-4 w-4" />
                             <span>Logout</span>
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -90,10 +101,10 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                                 ))}
                             </nav>
                              <div className="mt-auto">
-                                <Link href="/login" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted">
+                                <button onClick={handleLogout} className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted w-full">
                                     <LogOut className="h-5 w-5" />
                                     Logout
-                                </Link>
+                                </button>
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -109,7 +120,7 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>{practitioner.name}</DropdownMenuLabel>
+                            <DropdownMenuLabel>{auth.currentUser?.displayName || practitioner.name}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <Link href="#" className="cursor-pointer">Settings</Link>
@@ -118,11 +129,9 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                                 <Link href="#" className="cursor-pointer">Support</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                             <DropdownMenuItem asChild>
-                                <Link href="/login" className="flex items-center cursor-pointer">
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    <span>Logout</span>
-                                </Link>
+                             <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                <span>Logout</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
