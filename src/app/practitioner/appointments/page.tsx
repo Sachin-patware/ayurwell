@@ -16,11 +16,11 @@ export default function PractitionerAppointmentsPage() {
 
     const appointmentsQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        // In a real app, doctorId should be fetched from the doctor's profile
-        const doctorId = "placeholder-doctor-id";
+        // The doctorId in the appointments collection should be the same as the doctor's user ID (uid).
+        // This query now matches the security rule `where('doctorId', '==', request.auth.uid)`.
         return query(
             collection(firestore, 'appointments'),
-            where('doctorId', '==', doctorId),
+            where('doctorId', '==', user.uid),
             orderBy('datetime', 'desc')
         );
     }, [user, firestore]);
@@ -50,7 +50,7 @@ export default function PractitionerAppointmentsPage() {
                 </CardHeader>
                 <CardContent>
                     {isLoading && <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>}
-                    {error && <p className="text-destructive text-center">Could not load appointments.</p>}
+                    {error && <p className="text-destructive text-center p-4 bg-destructive/10 rounded-lg">{error.message}</p>}
                     {!isLoading && !error && (
                         <Table>
                             <TableHeader>
@@ -127,7 +127,7 @@ export default function PractitionerAppointmentsPage() {
                             </TableBody>
                         </Table>
                     )}
-                    {!isLoading && pastAppointments.length === 0 && (
+                    {!isLoading && !error && pastAppointments.length === 0 && (
                         <p className="text-center text-muted-foreground py-8">No appointment history.</p>
                     )}
                 </CardContent>
