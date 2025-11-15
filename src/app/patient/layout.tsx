@@ -12,16 +12,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
-import { patients } from "@/lib/placeholder-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Link from "next/link";
-import { Bell, LogOut, User, History } from "lucide-react";
-import { useAuth } from "@/firebase";
+import { Bell, LogOut, User, LayoutDashboard, NotebookPen, MessageSquare, Calendar, ShieldCheck } from "lucide-react";
+import { useAuth, useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 
 export default function PatientLayout({ children }: { children: ReactNode }) {
     const auth = useAuth();
+    const { user } = useUser();
     const router = useRouter();
     
     const handleLogout = async () => {
@@ -29,14 +29,25 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
         router.push('/login');
     };
 
-    // For demo, we'll use a placeholder avatar
     const patientAvatar = PlaceHolderImages.find(img => img.id === "avatar-1");
+    const userName = user?.displayName || "Patient";
 
-    const userName = auth.currentUser?.displayName || "Patient";
+    const navItems = [
+        { href: "/patient/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/patient/diet-plan", label: "My Diet Plan", icon: NotebookPen },
+        { href: "/patient/appointments", label: "Appointments", icon: Calendar },
+        { href: "/patient/chat", label: "Chat", icon: MessageSquare },
+        { href: "/patient/profile", label: "My Profile", icon: User },
+    ];
+    
+    // Add admin link for dev backdoor user
+    if (user?.email === 'admin@ayurwell.com') {
+      navItems.push({ href: "/admin/dashboard", label: "Admin Panel", icon: ShieldCheck });
+    }
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-background">
-            <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 z-10">
+            <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 z-10 shadow-sm">
                 <Logo />
                 <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
                     <div className="ml-auto flex-1 sm:flex-initial" />
@@ -57,20 +68,16 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
                         <DropdownMenuContent align="end">
                             <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                                <Link href="#" className="flex items-center cursor-pointer">
-                                    <User className="mr-2 h-4 w-4" />
-                                    <span>My Profile</span>
-                                </Link>
-                            </DropdownMenuItem>
-                             <DropdownMenuItem asChild>
-                                <Link href="#" className="flex items-center cursor-pointer">
-                                    <History className="mr-2 h-4 w-4" />
-                                    <span>History</span>
-                                </Link>
-                            </DropdownMenuItem>
+                             {navItems.map(item => (
+                                <DropdownMenuItem key={item.label} asChild>
+                                    <Link href={item.href} className="flex items-center cursor-pointer">
+                                        <item.icon className="mr-2 h-4 w-4" />
+                                        <span>{item.label}</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                            ))}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer">
+                            <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-destructive">
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Logout</span>
                             </DropdownMenuItem>
