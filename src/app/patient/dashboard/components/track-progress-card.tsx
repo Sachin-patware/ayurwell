@@ -10,6 +10,7 @@ import {
 import { LineChart } from 'lucide-react';
 import DailyLog from './daily-log';
 import WeeklyProgressChart from './weekly-progress-chart';
+import { Separator } from '@/components/ui/separator';
 
 export function TrackProgressCard() {
   return (
@@ -23,9 +24,11 @@ export function TrackProgressCard() {
           Log your daily feelings and see your weekly improvements.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="grid md:grid-cols-2 gap-8 items-start">
         <DailyLog />
-        <WeeklyProgressChart />
+        <div className='md:border-l md:pl-8'>
+          <WeeklyProgressChart />
+        </div>
       </CardContent>
     </Card>
   );
