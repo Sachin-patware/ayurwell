@@ -5,14 +5,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2, Save, KeyRound } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { useAuth, useFirestore, useUser, setDocumentNonBlocking, useDoc } from '@/firebase';
+import { useAuth, useFirestore, useUser, setDocumentNonBlocking, useDoc, useMemoFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { sendPasswordResetEmail } from 'firebase/auth';
 
@@ -34,7 +33,7 @@ export default function PatientProfilePage() {
     const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
     
-    const userDocRef = user ? doc(firestore, 'users', user.uid) : null;
+    const userDocRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
     const { data: userData, isLoading: isDocLoading } = useDoc<ProfileFormValues>(userDocRef);
 
     const form = useForm<ProfileFormValues>({
@@ -49,11 +48,12 @@ export default function PatientProfilePage() {
         }
     });
 
+    const { reset } = form;
     useEffect(() => {
         if (userData) {
-            form.reset(userData);
+            reset(userData);
         }
-    }, [userData, form]);
+    }, [userData, reset]);
 
     const handleSaveChanges = async (data: ProfileFormValues) => {
         if (!user || !firestore) return;
