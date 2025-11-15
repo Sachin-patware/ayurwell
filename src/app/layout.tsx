@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { AuthStateListener } from '@/components/AuthStateListener';
 
 export const metadata: Metadata = {
   title: 'AyurWell - Ayurvedic Diet Management',
@@ -24,6 +25,7 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased min-h-screen bg-background')}>
         <FirebaseClientProvider>
+          <AuthStateListener />
           {children}
           <FirebaseErrorListener />
         </FirebaseClientProvider>
