@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
 import Link from "next/link";
-import { Bell, LogOut, User, LayoutDashboard, NotebookPen, MessageSquare, Calendar, ShieldCheck } from "lucide-react";
+import { Bell, LogOut, User, LayoutDashboard, NotebookPen, Phone, Calendar, ShieldCheck } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
@@ -34,7 +34,7 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
         { href: "/patient/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { href: "/patient/diet-plan", label: "My Diet Plan", icon: NotebookPen },
         { href: "/patient/appointments", label: "Appointments", icon: Calendar },
-        { href: "/patient/chat", label: "Chat", icon: MessageSquare },
+        { href: "/patient/call", label: "Call Doctor", icon: Phone },
         { href: "/patient/profile", label: "My Profile", icon: User },
     ];
     

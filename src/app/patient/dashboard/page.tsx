@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from "@/firebase";
-import { ArrowRight, BookUser, Calendar, MessageSquare, Sparkles, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, BookUser, Calendar, Phone, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -72,7 +72,7 @@ export default function PatientDashboard() {
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-4">
                   <Button asChild variant="secondary" className="w-full">
-                      <Link href="/patient/chat"><MessageSquare className="mr-2" />Chat with Doctor</Link>
+                      <Link href="/patient/call"><Phone className="mr-2" />Call Doctor</Link>
                   </Button>
                   <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
                       <Link href="/patient/appointments">Book Appointment</Link>
