@@ -32,7 +32,7 @@ export default function PractitionerDashboard() {
   return (
     <>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold font-headline">Dashboard</h1>
+        <h1 className="text-2xl font-semibold font-headline">Practitioner Dashboard</h1>
         <div className="flex gap-2">
             <Button asChild>
                 <Link href="/practitioner/add-patient">

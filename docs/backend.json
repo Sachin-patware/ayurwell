@@ -1,0 +1,156 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the system.",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Authentication user ID." },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["patient", "doctor", "admin"] },
+        "gender": { "type": "string" },
+        "age": { "type": "number" },
+        "location": { "type": "string" },
+        "phone": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "role", "createdAt"]
+    },
+    "Doctor": {
+      "title": "Doctor",
+      "type": "object",
+      "description": "Represents a doctor's professional profile.",
+      "properties": {
+        "doctorId": { "type": "string" },
+        "userId": { "type": "string", "description": "Reference to the User entity." },
+        "specialization": { "type": "string" },
+        "experience": { "type": "number" },
+        "verified": { "type": "boolean", "default": false },
+        "bio": { "type": "string" }
+      },
+      "required": ["doctorId", "userId", "specialization"]
+    },
+    "Patient": {
+      "title": "Patient",
+      "type": "object",
+      "description": "Represents a patient's health profile.",
+      "properties": {
+        "patientId": { "type": "string" },
+        "userId": { "type": "string", "description": "Reference to the User entity." },
+        "doctorId": { "type": "string", "description": "Reference to the Doctor entity." },
+        "healthHistory": { "type": "string" },
+        "assessmentResult": { "type": "object" },
+        "currentDietPlanId": { "type": "string" }
+      },
+      "required": ["patientId", "userId"]
+    },
+    "Food": {
+      "title": "Food",
+      "type": "object",
+      "description": "Represents a food item in the database.",
+      "properties": {
+        "foodId": { "type": "string" },
+        "name": { "type": "string" },
+        "rasa": { "type": "string" },
+        "virya": { "type": "string" },
+        "vipaka": { "type": "string" },
+        "doshaEffect": { "type": "string" },
+        "calories": { "type": "number" },
+        "nutrients": { "type": "object" }
+      },
+      "required": ["foodId", "name"]
+    },
+    "Assessment": {
+      "title": "Assessment",
+      "type": "object",
+      "description": "Represents a patient's Ayurvedic assessment.",
+      "properties": {
+        "assessmentId": { "type": "string" },
+        "patientId": { "type": "string" },
+        "prakriti": { "type": "string" },
+        "vikriti": { "type": "string" },
+        "answers": { "type": "object" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["assessmentId", "patientId", "timestamp"]
+    },
+    "DietPlan": {
+      "title": "DietPlan",
+      "type": "object",
+      "description": "Represents a diet plan for a patient.",
+      "properties": {
+        "planId": { "type": "string" },
+        "patientId": { "type": "string" },
+        "doctorId": { "type": "string" },
+        "recommendations": { "type": "string" },
+        "recipes": { "type": "object" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["planId", "patientId", "doctorId", "timestamp"]
+    },
+    "Message": {
+      "title": "Message",
+      "type": "object",
+      "description": "Represents a message in the chat system.",
+      "properties": {
+        "messageId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "receiverId": { "type": "string" },
+        "message": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["messageId", "senderId", "receiverId", "message", "timestamp"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "type": "object",
+      "description": "Represents an appointment between a doctor and a patient.",
+      "properties": {
+        "appointmentId": { "type": "string" },
+        "doctorId": { "type": "string" },
+        "patientId": { "type": "string" },
+        "datetime": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["scheduled", "completed", "cancelled"] }
+      },
+      "required": ["appointmentId", "doctorId", "patientId", "datetime", "status"]
+    }
+  },
+  "auth": {
+    "providers": ["password", "anonymous", "google", "phone"]
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores public user profile information, including their role."
+    },
+    "/doctors/{doctorId}": {
+      "schema": { "$ref": "#/entities/Doctor" },
+      "description": "Stores doctor-specific professional information."
+    },
+    "/patients/{patientId}": {
+      "schema": { "$ref": "#/entities/Patient" },
+      "description": "Stores patient-specific health information. patientId should be the same as the user's uid."
+    },
+    "/foods/{foodId}": {
+      "schema": { "$ref": "#/entities/Food" },
+      "description": "Global database of food items and their Ayurvedic properties."
+    },
+    "/assessments/{assessmentId}": {
+      "schema": { "$ref": "#/entities/Assessment" },
+      "description": "Stores records of patient assessments."
+    },
+    "/dietPlans/{planId}": {
+      "schema": { "$ref": "#/entities/DietPlan" },
+      "description": "Stores all diet plans generated for patients."
+    },
+    "/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/Message" },
+      "description": "Stores all chat messages between users."
+    },
+    "/appointments/{appointmentId}": {
+      "schema": { "$ref": "#/entities/Appointment" },
+      "description": "Stores all appointments."
+    }
+  }
+}

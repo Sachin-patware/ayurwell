@@ -1,7 +1,10 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Stethoscope, User } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -13,109 +16,148 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Logo } from '@/components/logo';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { initiateEmailSignIn, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const [role, setRole] = useState('practitioner');
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const auth = useAuth();
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (role === 'practitioner') {
-      router.push('/practitioner/dashboard');
-    } else {
-      router.push('/patient/dashboard');
-    }
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const handleLogin: SubmitHandler<LoginFormValues> = async (data) => {
+    setIsLoading(true);
+    initiateEmailSignIn(auth, data.email, data.password)
+    .catch((error: any) => {
+        toast({
+            variant: 'destructive',
+            title: "Login Failed",
+            description: error.message || "An unknown error occurred.",
+        });
+        setIsLoading(false);
+    });
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    initiateGoogleSignIn(auth)
+    .catch((error: any) => {
+        toast({
+            variant: 'destructive',
+            title: "Google Sign-In Failed",
+            description: error.message || "Could not sign in with Google.",
+        });
+        setIsLoading(false);
+    });
+  };
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="flex justify-center">
-            <Logo />
-        </div>
-        <Tabs defaultValue="practitioner" className="w-full" onValueChange={setRole}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="practitioner">
-              <Stethoscope className="mr-2 h-4 w-4" />
-              Practitioner
-            </TabsTrigger>
-            <TabsTrigger value="patient">
-              <User className="mr-2 h-4 w-4" />
-              Patient
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="practitioner">
-            <Card>
-              <CardHeader className="space-y-1 text-center">
-                <CardTitle className="text-2xl font-headline">Practitioner Login</CardTitle>
-                <CardDescription>
-                  Enter your email below to login to your account
-                </CardDescription>
-              </CardHeader>
-              <form onSubmit={handleLogin}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email-practitioner">Email</Label>
-                    <Input id="email-practitioner" type="email" placeholder="m@example.com" required defaultValue="dr.anjali@ayurwell.com" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password-practitioner">Password</Label>
-                    <Input id="password-practitioner" type="password" required defaultValue="password" />
-                  </div>
-                </CardContent>
-                <CardFooter className="flex flex-col gap-4">
-                  <Button className="w-full" type="submit">Login</Button>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Don't have an account?{' '}
-                    <Link href="#" className="underline hover:text-primary">
-                      Register
-                    </Link>
-                  </p>
-                </CardFooter>
-              </form>
-            </Card>
-          </TabsContent>
-          <TabsContent value="patient">
-            <Card>
-              <CardHeader className="space-y-1 text-center">
-                <CardTitle className="text-2xl font-headline">Patient Login</CardTitle>
-                <CardDescription>
-                  Enter your credentials and your doctor's ID to login
-                </CardDescription>
-              </CardHeader>
-              <form onSubmit={handleLogin}>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-patient">Email</Label>
-                  <Input id="email-patient" type="email" placeholder="patient@example.com" required defaultValue="priya.sharma@example.com" />
+      <Card className="w-full max-w-sm shadow-2xl rounded-2xl">
+        <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center mb-4">
+                <Logo />
+            </div>
+          <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
+          <CardDescription>
+            Enter your credentials to access your dashboard.
+          </CardDescription>
+        </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleLogin)}>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="m@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex justify-between items-center">
+                        <FormLabel>Password</FormLabel>
+                         <Link
+                            href="/forgot-password"
+                            className="text-xs text-primary hover:underline"
+                        >
+                            Forgot password?
+                        </Link>
+                    </div>
+                    <FormControl>
+                      <Input type="password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter className="flex flex-col gap-4">
+                <Button className="w-full" type="submit" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Login'}
+                </Button>
+                <div className="relative w-full">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">
+                        Or continue with
+                        </span>
+                    </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password-patient">Password</Label>
-                  <Input id="password-patient" type="password" required defaultValue="password" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="doctor-id">Doctor ID</Label>
-                  <Input id="doctor-id" type="text" placeholder="D12345" required defaultValue="D12345" />
-                </div>
-              </CardContent>
-              <CardFooter className="flex flex-col gap-4">
-                <Button className="w-full" type="submit">Login</Button>
+                <Button variant="outline" className="w-full" type="button" onClick={handleGoogleSignIn} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (
+                        <>
+                            <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 21.2 172.4 56.2L371.3 128C339.4 99.8 298.9 87 248 87c-83.1 0-152.2 65.5-152.2 148.4s69.1 148.4 152.2 148.4c88.4 0 132-60.9 136-93.5H248v-65.4h239.1c1.3 12.8 2.2 26.6 2.2 40.8z"></path></svg>
+                            Sign in with Google
+                        </>
+                    )}
+                </Button>
                 <p className="text-xs text-center text-muted-foreground">
-                    Don't have an account?{' '}
-                    <Link href="#" className="underline hover:text-primary">
-                      Register
-                    </Link>
-                  </p>
-              </CardFooter>
-              </form>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+                Don't have an account?{' '}
+                <Link href="/signup" className="underline hover:text-primary font-semibold">
+                    Sign up
+                </Link>
+                </p>
+            </CardFooter>
+          </form>
+        </Form>
+      </Card>
     </div>
   );
 }

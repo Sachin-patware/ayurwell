@@ -10,34 +10,35 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
-import { patients } from "@/lib/placeholder-data";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import Link from "next/link";
-import { Bell, LogOut, User, History } from "lucide-react";
+import { Bell, LogOut, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/firebase";
-import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
-export default function PatientLayout({ children }: { children: ReactNode }) {
+export default function AdminLayout({ children }: { children: ReactNode }) {
     const auth = useAuth();
     const router = useRouter();
-    
+
     const handleLogout = async () => {
         await signOut(auth);
         router.push('/login');
     };
 
-    // For demo, we'll use a placeholder avatar
-    const patientAvatar = PlaceHolderImages.find(img => img.id === "avatar-1");
-
-    const userName = auth.currentUser?.displayName || "Patient";
+    const adminUser = {
+        name: auth.currentUser?.displayName || "Admin User",
+        email: auth.currentUser?.email || "admin@ayurwell.com"
+    }
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-background">
             <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 z-10">
                 <Logo />
+                <div className="flex items-center gap-2 text-lg font-semibold text-primary">
+                    <ShieldCheck className="h-6 w-6"/>
+                    <span>Admin Panel</span>
+                </div>
                 <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
                     <div className="ml-auto flex-1 sm:flex-initial" />
                      <Button variant="ghost" size="icon" className="rounded-full">
@@ -48,27 +49,13 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="icon" className="rounded-full">
                                 <Avatar>
-                                    {patientAvatar && <AvatarImage src={patientAvatar.imageUrl} alt={userName} />}
-                                    <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
+                                    <AvatarFallback>{adminUser.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="sr-only">Toggle user menu</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>{userName}</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild>
-                                <Link href="#" className="flex items-center cursor-pointer">
-                                    <User className="mr-2 h-4 w-4" />
-                                    <span>My Profile</span>
-                                </Link>
-                            </DropdownMenuItem>
-                             <DropdownMenuItem asChild>
-                                <Link href="#" className="flex items-center cursor-pointer">
-                                    <History className="mr-2 h-4 w-4" />
-                                    <span>History</span>
-                                </Link>
-                            </DropdownMenuItem>
+                            <DropdownMenuLabel>{adminUser.name}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer">
                                 <LogOut className="mr-2 h-4 w-4" />

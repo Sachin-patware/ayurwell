@@ -1,0 +1,113 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getRole(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role;
+    }
+
+    function isRole(role) {
+      return isSignedIn() && getRole(request.auth.uid) == role;
+    }
+    
+    function isDoctorForPatient(patientId) {
+      let patient = get(/databases/$(database)/documents/patients/$(patientId)).data;
+      let doctor = get(/databases/$(database)/documents/doctors/$(request.auth.uid)).data;
+      return isSignedIn() && isRole('doctor') && patient.doctorId == doctor.doctorId;
+    }
+
+    // users - Public user data and roles
+    match /users/{userId} {
+      // Anyone can create their own user profile document.
+      allow create: if isOwner(userId);
+      // Only the user themselves or an admin can read or update their profile.
+      allow get, update: if isOwner(userId) || isRole('admin');
+      // No one can list all users or delete a user record from the client.
+      allow list, delete: if false;
+    }
+
+    // doctors - Professional profiles for doctors
+    match /doctors/{doctorId} {
+      // Any signed-in user can view doctor profiles.
+      allow get, list: if isSignedIn();
+      // Only an admin can create, update, or delete doctor profiles.
+      allow create, update, delete: if isRole('admin');
+    }
+    
+    // patients - Sensitive patient health data
+    match /patients/{patientId} {
+      // A patient can create their own record.
+      allow create: if isOwner(patientId);
+      // A patient can read/update/delete their own data.
+      // A doctor can read/update their own patient's data.
+      // An admin can read any patient data.
+      allow get, update: if isOwner(patientId) || isDoctorForPatient(patientId) || isRole('admin');
+      allow delete: if isOwner(patientId) || isRole('admin');
+      // Listing all patients is restricted.
+      allow list: if isRole('admin'); // Or a doctor could list their own patients
+    }
+
+    // foods - Public food database
+    match /foods/{foodId} {
+      // Any signed-in user can read the food database.
+      allow get, list: if isSignedIn();
+      // Only admins can modify the food database.
+      allow create, update, delete: if isRole('admin');
+    }
+
+    // assessments - Patient assessment results
+    match /assessments/{assessmentId} {
+      // Patients can create their own assessments.
+      allow create: if isOwner(request.resource.data.patientId);
+      // Patients, their doctor, or an admin can read assessments.
+      allow get: if isOwner(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.patientId) || isDoctorForPatient(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.patientId) || isRole('admin');
+      // Assessments are immutable from the client.
+      allow update, delete, list: if false;
+    }
+
+    // dietPlans - Diet plans for patients
+    match /dietPlans/{planId} {
+      // Only a doctor or admin can create a diet plan.
+      allow create: if isRole('doctor') || isRole('admin');
+      // The patient, their doctor, or an admin can read the plan.
+      allow get: if isOwner(get(/databases/$(database)/documents/dietPlans/$(planId)).data.patientId) || isDoctorForPatient(get(/databases/$(database)/documents/dietPlans/$(planId)).data.patientId) || isRole('admin');
+      // Only the assigned doctor or an admin can update/delete the plan.
+      allow update, delete: if isDoctorForPatient(get(/databases/$(database)/documents/dietPlans/$(planId)).data.patientId) || isRole('admin');
+      allow list: if isRole('admin');
+    }
+
+    // messages - Chat between patient and doctor
+    match /messages/{messageId} {
+       // Sender must be the authenticated user.
+      allow create: if isOwner(request.resource.data.senderId);
+       // Only sender or receiver can read a message.
+      allow get: if isOwner(resource.data.senderId) || isOwner(resource.data.receiverId);
+      // Messages are immutable.
+      allow update, delete: if false;
+      // Disallow listing messages directly for security. Queries should be used.
+      allow list: if false;
+    }
+    
+    // appointments - Scheduling between patient and doctor
+    match /appointments/{appointmentId} {
+      // Patient or doctor can create an appointment.
+      allow create: if isOwner(request.resource.data.patientId) || isOwner(get(/databases/$(database)/documents/doctors/$(request.resource.data.doctorId)).data.userId);
+      // Patient, doctor, or admin can view.
+      allow get: if isOwner(get(/databases/$(database)/documents/appointments/$(appointmentId)).data.patientId) || isOwner(get(/databases/$(database)/documents/doctors/$(get(/databases/$(database)/documents/appointments/$(appointmentId)).data.doctorId)).data.userId) || isRole('admin');
+      // Patient can cancel, doctor can update status.
+      allow update: if isOwner(get(/databases/$(database)/documents/appointments/$(appointmentId)).data.patientId) || isOwner(get(/databases/$(database)/documents/doctors/$(get(/databases/$(database)/documents/appointments/$(appointmentId)).data.doctorId)).data.userId) || isRole('admin');
+      allow delete: if isRole('admin');
+      allow list: if isRole('admin');
+    }
+  }
+}
