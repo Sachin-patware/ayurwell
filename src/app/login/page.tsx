@@ -52,38 +52,28 @@ export default function LoginPage() {
 
   const handleLogin: SubmitHandler<LoginFormValues> = async (data) => {
     setIsLoading(true);
-    try {
-        await initiateEmailSignIn(auth, data.email, data.password);
-        toast({
-            title: "Logged In",
-            description: "You will be redirected to your dashboard.",
-        });
-    } catch (error: any) {
+    initiateEmailSignIn(auth, data.email, data.password)
+    .catch((error: any) => {
         toast({
             variant: 'destructive',
             title: "Login Failed",
             description: error.message || "An unknown error occurred.",
         });
-    }
-    setIsLoading(false);
+        setIsLoading(false);
+    });
   };
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    try {
-        await initiateGoogleSignIn(auth);
-        toast({
-            title: "Redirecting to Google...",
-            description: "Please follow the instructions to sign in.",
-        });
-    } catch (error: any) {
+    initiateGoogleSignIn(auth)
+    .catch((error: any) => {
         toast({
             variant: 'destructive',
             title: "Google Sign-In Failed",
             description: error.message || "Could not sign in with Google.",
         });
-    }
-    setIsLoading(false);
+        setIsLoading(false);
+    });
   };
   
   return (
@@ -119,7 +109,15 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <div className="flex justify-between items-center">
+                        <FormLabel>Password</FormLabel>
+                         <Link
+                            href="/forgot-password"
+                            className="text-xs text-primary hover:underline"
+                        >
+                            Forgot password?
+                        </Link>
+                    </div>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
