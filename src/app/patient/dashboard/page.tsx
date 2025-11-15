@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser } from "@/firebase";
-import { ArrowRight, BookUser, Calendar, Phone, Sparkles } from "lucide-react";
+import { ArrowRight, BookUser, Calendar, Phone, Sparkles, NotebookPen, LineChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";

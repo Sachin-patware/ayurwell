@@ -47,6 +47,13 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
         <div className="flex min-h-screen w-full flex-col bg-background">
             <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 z-10 shadow-sm">
                 <Logo />
+                <nav className="hidden md:flex items-center gap-4">
+                  {navItems.map(item => (
+                      <Button key={item.label} variant="ghost" asChild>
+                          <Link href={item.href}>{item.label}</Link>
+                      </Button>
+                  ))}
+                </nav>
                 <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
                     <div className="ml-auto flex-1 sm:flex-initial" />
                      <Button variant="ghost" size="icon" className="rounded-full">
@@ -67,14 +74,14 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
                             <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                              {navItems.map(item => (
-                                <DropdownMenuItem key={item.label} asChild>
+                                <DropdownMenuItem key={item.label} asChild className="md:hidden">
                                     <Link href={item.href} className="flex items-center cursor-pointer">
                                         <item.icon className="mr-2 h-4 w-4" />
                                         <span>{item.label}</span>
                                     </Link>
                                 </DropdownMenuItem>
                             ))}
-                            <DropdownMenuSeparator />
+                             <DropdownMenuSeparator className="md:hidden" />
                             <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-destructive">
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Logout</span>
