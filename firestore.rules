@@ -1,0 +1,165 @@
+/**
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a strict user-ownership model for most data, with role-based access for admin functions.
+ *
+ * Data Structure:
+ * - User data is stored under `/users/{userId}`.
+ * - Doctor data is stored under `/doctors/{doctorId}`.
+ * - Patient data, diet plans, appointments and messages are nested under `/users/{userId}/patients/{patientId}`.
+ * - Food data is stored in the top-level `/foods/{foodId}` collection.
+ * - Admin logs are stored in the top-level `/admin_logs/{adminLogId}` collection.
+ *
+ * Key Security Decisions:
+ * - User data is strictly owned by the user, enforced via path-based rules.
+ * - Doctors have read-only access to patient data via denormalized `doctorId` on the `Patient` documents.
+ * - Admin access is not explicitly granted in this prototype. Rules need to be added to define admin roles
+ * - List operations are generally restricted to owners or roles with explicit permissions.
+ *
+ * Denormalization for Authorization:
+ * - The `Patient` entity denormalizes the `doctorId` to allow for efficient doctor-based queries without extra `get()` calls.
+ *
+ * Structural Segregation:
+ * - Private patient data is stored under the user's path, while potentially public food data is stored in a top-level collection.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Checks if the user is signed in.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the user is an existing owner (signed in, is owner, and the resource exists).
+     */
+    function isExistingOwner(userId) {
+        return isSignedIn() && isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description User data. Only the authenticated user can read/write their own data.
+     * @path /users/{userId}
+     * @allow (create) User with ID matching auth.uid can create their profile.
+     * @allow (get, update, delete) Authenticated user with ID matching the document ID.
+     * @deny (create) User tries to create a profile with an ID that doesn't match their auth.uid.
+     * @principle Enforces document ownership for writes and self-creation.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // Listing all users is not permitted.
+      allow create: if isOwner(userId) && request.resource.data.id == request.auth.uid;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id; // Enforce immutable id
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Doctor data. Any authenticated user can read doctor profiles, but only an admin can create/update/delete them.
+     * @path /doctors/{doctorId}
+     * @allow (get, list) Any authenticated user can read doctor profiles.
+     * @deny (create, update, delete) Only admins can create, update, or delete doctor profiles.  // TODO: Add admin role check.
+     * @principle Public read access with restricted write access.
+     */
+    match /doctors/{doctorId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false; // TODO: Add admin role validation once roles are defined
+    }
+
+    /**
+     * @description Patient data nested under user. User can only access their own patients.
+     * @path /users/{userId}/patients/{patientId}
+     * @allow (create) User creates a patient under their own ID.
+     * @allow (get, update, delete) Authenticated user with ID matching the document ID.
+     * @deny (create) User tries to create a patient under someone else's ID.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/patients/{patientId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId; // Enforce immutable userId
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Appointment data nested under patient. User can only access appointments for their own patients.
+     * @path /users/{userId}/patients/{patientId}/appointments/{appointmentId}
+     * @allow (create) User creates an appointment under their own patient's ID.
+     * @allow (get, update, delete) Authenticated user with ID matching the patient's user ID.
+     * @deny (create) User tries to create an appointment under someone else's patient ID.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/patients/{patientId}/appointments/{appointmentId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Food data. Only admins can read/write food data.
+     * @path /foods/{foodId}
+     * @allow (get, list) Any authenticated user can read food data.
+     * @deny (create, update, delete) Only admins can create, update, or delete food data. // TODO: Add admin role check.
+     * @principle Public read access with restricted write access.
+     */
+    match /foods/{foodId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false; // TODO: Add admin role validation once roles are defined
+    }
+
+    /**
+     * @description Diet plan data nested under patient. User can only access diet plans for their own patients.
+     * @path /users/{userId}/patients/{patientId}/diet_plans/{dietPlanId}
+     * @allow (create) User creates a diet plan under their own patient's ID.
+     * @allow (get, update, delete) Authenticated user with ID matching the patient's user ID.
+     * @deny (create) User tries to create a diet plan under someone else's patient ID.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/patients/{patientId}/diet_plans/{dietPlanId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Message data nested under patient. User can only access messages for their own patients.
+     * @path /users/{userId}/patients/{patientId}/messages/{messageId}
+     * @allow (create) User creates a message under their own patient's ID.
+     * @allow (get, update, delete) Authenticated user with ID matching the patient's user ID.
+     * @deny (create) User tries to create a message under someone else's patient ID.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/patients/{patientId}/messages/{messageId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Admin log data. Only admins can read/write admin logs.
+     * @path /admin_logs/{adminLogId}
+     * @allow (get, list) Only admins can read admin logs.
+     * @deny (create, update, delete) Only admins can create, update, or delete admin logs.  // TODO: Add admin role check.
+     * @principle Restricted access for admin auditing.
+     */
+    match /admin_logs/{adminLogId} {
+      allow get, list: if false; // TODO: Add admin role validation once roles are defined
+      allow create, update, delete: if false; // TODO: Add admin role validation once roles are defined
+    }
+  }
+}

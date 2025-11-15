@@ -1,0 +1,476 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the system (patient, doctor, or admin).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role (patient, doctor, or admin)."
+        },
+        "age": {
+          "type": "number",
+          "description": "The user's age."
+        },
+        "gender": {
+          "type": "string",
+          "description": "The user's gender."
+        },
+        "location": {
+          "type": "string",
+          "description": "The user's location."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "role"
+      ]
+    },
+    "Doctor": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Doctor",
+      "type": "object",
+      "description": "Represents a doctor in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the doctor."
+        },
+        "name": {
+          "type": "string",
+          "description": "The doctor's full name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The doctor's email address.",
+          "format": "email"
+        },
+        "specialization": {
+          "type": "string",
+          "description": "The doctor's specialization."
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Indicates if the doctor is verified."
+        },
+        "bio": {
+          "type": "string",
+          "description": "The doctor's biography."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "specialization",
+        "verified"
+      ]
+    },
+    "Patient": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Patient",
+      "type": "object",
+      "description": "Represents a patient in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the patient."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:1 Patient)"
+        },
+        "doctorId": {
+          "type": "string",
+          "description": "Reference to Doctor. (Relationship: Doctor 1:N Patient)"
+        },
+        "healthHistory": {
+          "type": "string",
+          "description": "The patient's health history."
+        },
+        "assessmentResults": {
+          "type": "string",
+          "description": "The patient's assessment results."
+        },
+        "currentDietPlan": {
+          "type": "string",
+          "description": "Reference to DietPlan. (Relationship: DietPlan 1:1 Patient)"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "doctorId"
+      ]
+    },
+    "Appointment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Appointment",
+      "type": "object",
+      "description": "Represents an appointment between a doctor and a patient.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the appointment."
+        },
+        "doctorId": {
+          "type": "string",
+          "description": "Reference to Doctor. (Relationship: Doctor 1:N Appointment)"
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference to Patient. (Relationship: Patient 1:N Appointment)"
+        },
+        "datetime": {
+          "type": "string",
+          "description": "The date and time of the appointment.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the appointment (e.g., scheduled, completed, cancelled)."
+        }
+      },
+      "required": [
+        "id",
+        "doctorId",
+        "patientId",
+        "datetime"
+      ]
+    },
+    "Food": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Food",
+      "type": "object",
+      "description": "Represents a food item in the database.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the food item."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the food item."
+        },
+        "rasa": {
+          "type": "string",
+          "description": "The rasa (taste) of the food item."
+        },
+        "virya": {
+          "type": "string",
+          "description": "The virya (energy) of the food item."
+        },
+        "vipaka": {
+          "type": "string",
+          "description": "The vipaka (post-digestive effect) of the food item."
+        },
+        "doshaEffect": {
+          "type": "string",
+          "description": "The effect of the food item on the doshas."
+        },
+        "calories": {
+          "type": "number",
+          "description": "The number of calories in the food item."
+        },
+        "nutrients": {
+          "type": "string",
+          "description": "The nutrient profile of the food item."
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "DietPlan": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DietPlan",
+      "type": "object",
+      "description": "Represents a diet plan for a patient.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the diet plan."
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference to Patient. (Relationship: Patient 1:N DietPlan)"
+        },
+        "doctorId": {
+          "type": "string",
+          "description": "Reference to Doctor. (Relationship: Doctor 1:N DietPlan)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time the diet plan was created.",
+          "format": "date-time"
+        },
+        "planDetails": {
+          "type": "string",
+          "description": "The details of the diet plan."
+        },
+        "recommendations": {
+          "type": "string",
+          "description": "Additional recommendations for the diet plan."
+        }
+      },
+      "required": [
+        "id",
+        "patientId",
+        "doctorId",
+        "createdAt"
+      ]
+    },
+    "Message": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Message",
+      "type": "object",
+      "description": "Represents a message between a sender and a receiver.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the message."
+        },
+        "senderId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Message (sent))"
+        },
+        "receiverId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Message (received))"
+        },
+        "message": {
+          "type": "string",
+          "description": "The content of the message."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "The timestamp of the message.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "senderId",
+        "receiverId",
+        "message",
+        "timestamp"
+      ]
+    },
+    "AdminLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AdminLog",
+      "type": "object",
+      "description": "Represents a log entry for an admin action.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the log entry."
+        },
+        "action": {
+          "type": "string",
+          "description": "The action performed by the admin."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N AdminLog)"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "The timestamp of the action.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "userId",
+        "timestamp"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user data (patients, doctors, admins). Path-based ownership for user data. Includes 'role' for role-based access control.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/doctors/{doctorId}",
+        "definition": {
+          "entityName": "Doctor",
+          "schema": {
+            "$ref": "#/backend/entities/Doctor"
+          },
+          "description": "Stores doctor data. No specific authorization concerns beyond CRUD requirements. Denormalized `doctorId` is in the patient record.",
+          "params": [
+            {
+              "name": "doctorId",
+              "description": "The unique identifier for the doctor."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/patients/{patientId}",
+        "definition": {
+          "entityName": "Patient",
+          "schema": {
+            "$ref": "#/backend/entities/Patient"
+          },
+          "description": "Stores patient-specific data. Under user for path-based ownership. Includes denormalized 'doctorId' for authorization independence (allows doctors to easily query assigned patients).",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (owner of the patient data)."
+            },
+            {
+              "name": "patientId",
+              "description": "The unique identifier for the patient."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/patients/{patientId}/appointments/{appointmentId}",
+        "definition": {
+          "entityName": "Appointment",
+          "schema": {
+            "$ref": "#/backend/entities/Appointment"
+          },
+          "description": "Stores appointment data. Located under patient for data locality and ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (owner of the patient data)."
+            },
+            {
+              "name": "patientId",
+              "description": "The unique identifier for the patient."
+            },
+            {
+              "name": "appointmentId",
+              "description": "The unique identifier for the appointment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/foods/{foodId}",
+        "definition": {
+          "entityName": "Food",
+          "schema": {
+            "$ref": "#/backend/entities/Food"
+          },
+          "description": "Stores food data. Accessible to admins for CRUD operations.",
+          "params": [
+            {
+              "name": "foodId",
+              "description": "The unique identifier for the food item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/patients/{patientId}/diet_plans/{dietPlanId}",
+        "definition": {
+          "entityName": "DietPlan",
+          "schema": {
+            "$ref": "#/backend/entities/DietPlan"
+          },
+          "description": "Stores diet plan data. Located under patient for data locality and ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (owner of the patient data)."
+            },
+            {
+              "name": "patientId",
+              "description": "The unique identifier for the patient."
+            },
+            {
+              "name": "dietPlanId",
+              "description": "The unique identifier for the diet plan."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/patients/{patientId}/messages/{messageId}",
+        "definition": {
+          "entityName": "Message",
+          "schema": {
+            "$ref": "#/backend/entities/Message"
+          },
+          "description": "Stores message data. Located under patient for data locality and ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (owner of the patient data)."
+            },
+            {
+              "name": "patientId",
+              "description": "The unique identifier for the patient."
+            },
+            {
+              "name": "messageId",
+              "description": "The unique identifier for the message."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/admin_logs/{adminLogId}",
+        "definition": {
+          "entityName": "AdminLog",
+          "schema": {
+            "$ref": "#/backend/entities/AdminLog"
+          },
+          "description": "Stores admin log data. Accessible to admins for auditing.",
+          "params": [
+            {
+              "name": "adminLogId",
+              "description": "The unique identifier for the admin log."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure prioritizes authorization independence and QAPs using denormalization and structural segregation. User data is stored under `/users/{userId}` ensuring path-based ownership. Role-based access control is enforced via the `role` field in the `User` document. Patient-Doctor relationships are maintained via denormalized `doctorId` in the patient record, which allows doctors to easily query assigned patients. Diet plans, assessment results, and messages related to a specific patient are stored within subcollections under the patient's document (`/users/{userId}/patients/{patientId}`). This promotes data locality and efficient querying for patient-specific data. The food database is stored in the `/foods` collection and accessible to admins for CRUD operations. Admin logs are stored in `/admin_logs` to maintain an audit trail. This structure enables secure list operations as the rules can easily verify the role of the requesting user and allow/deny access based on the path. Authorization independence is achieved by avoiding `get()` calls in rules and relying on data available within the documents and request context."
+  }
+}
