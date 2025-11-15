@@ -27,12 +27,17 @@ export function AuthStateListener() {
           const userData = docSnap.data();
           const role = userData.role;
           
-          if (role === 'practitioner' && !pathname.startsWith('/practitioner')) {
+          if (role === 'admin' && !pathname.startsWith('/admin')) {
+            router.push('/admin/dashboard');
+          } else if (role === 'practitioner' && !pathname.startsWith('/practitioner')) {
             router.push('/practitioner/dashboard');
           } else if (role === 'patient' && !pathname.startsWith('/patient')) {
             router.push('/patient/dashboard');
-          } else if (role === 'admin' && !pathname.startsWith('/admin')) {
-            router.push('/admin/dashboard');
+          } else if (pathname === '/select-role') {
+            // If user has a role but is on select-role page, redirect them away.
+            if (role === 'admin') router.push('/admin/dashboard');
+            else if (role === 'practitioner') router.push('/practitioner/dashboard');
+            else if (role === 'patient') router.push('/patient/dashboard');
           }
 
         } else {
