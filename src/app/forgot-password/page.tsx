@@ -56,8 +56,8 @@ export default function ForgotPasswordPage() {
     } catch (error: any) {
         toast({
             variant: 'destructive',
-            title: 'Error',
-            description: error.message || 'Failed to send password reset email.',
+            title: 'Error Sending Email',
+            description: error.message || 'Failed to send password reset email. Please try again.',
         });
     } finally {
         setIsLoading(false);
@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
             <CardContent className="text-center">
                 <Mail className="h-12 w-12 text-primary mx-auto mb-4" />
                 <p className="text-muted-foreground">
-                    If an account with that email exists, a reset link has been sent.
+                    If an account with that email exists, a reset link has been sent. Please check your spam folder.
                 </p>
             </CardContent>
         ) : (

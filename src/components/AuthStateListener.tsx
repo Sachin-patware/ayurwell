@@ -16,9 +16,10 @@ export function AuthStateListener() {
       return; // Wait until user state is determined and firestore is available
     }
 
-    const publicRoutes = ['/', '/login', '/signup', '/select-role', '/forgot-password'];
-    const isPublicRoute = publicRoutes.includes(pathname);
-    
+    const authRoutes = ['/login', '/signup', '/select-role', '/forgot-password'];
+    const isAuthRoute = authRoutes.includes(pathname);
+    const isPublicHome = pathname === '/';
+
     if (user) {
       // User is logged in
       const userDocRef = doc(firestore, 'users', user.uid);
@@ -27,17 +28,11 @@ export function AuthStateListener() {
           const userData = docSnap.data();
           const role = userData.role;
           
-          if (role === 'admin' && pathname !== '/admin/dashboard') {
-            router.push('/admin/dashboard');
-          } else if (role === 'practitioner' && pathname !== '/practitioner/dashboard') {
-            router.push('/practitioner/dashboard');
-          } else if (role === 'patient' && pathname !== '/patient/dashboard') {
-            router.push('/patient/dashboard');
-          } else if (pathname === '/select-role') {
-            // If user has a role but is on select-role page, redirect them away.
-            if (role === 'admin') router.push('/admin/dashboard');
-            else if (role === 'practitioner') router.push('/practitioner/dashboard');
-            else if (role === 'patient') router.push('/patient/dashboard');
+          const targetDashboard = `/${role}/dashboard`;
+
+          // Redirect to the correct dashboard if they are on an auth route, the home page, or the wrong dashboard
+          if (role && !pathname.startsWith(`/${role}`)) {
+             router.push(targetDashboard);
           }
 
         } else {
@@ -51,7 +46,8 @@ export function AuthStateListener() {
 
     } else {
       // User is not logged in
-      if (!isPublicRoute) {
+      // If user is on a protected page, redirect to login.
+      if (!isAuthRoute && !isPublicHome) {
         router.push('/login');
       }
     }
