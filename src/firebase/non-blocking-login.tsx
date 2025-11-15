@@ -32,5 +32,11 @@ export function initiateGoogleSignIn(authInstance: Auth) {
 
 /** Initiate password reset email (blocking). */
 export function initiatePasswordReset(authInstance: Auth, email: string) {
-  return sendPasswordResetEmail(authInstance, email);
+  const actionCodeSettings = {
+    // URL to redirect back to. This must be a URL that is whitelisted in the Firebase console.
+    url: `${window.location.origin}/login`,
+    // This must be true.
+    handleCodeInApp: true,
+  };
+  return sendPasswordResetEmail(authInstance, email, actionCodeSettings);
 }
