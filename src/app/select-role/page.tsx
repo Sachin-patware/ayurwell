@@ -63,11 +63,15 @@ export default function SelectRolePage() {
     try {
         const user = auth.currentUser;
         const userDocRef = doc(firestore, 'users', user.uid);
+
+        // Developer backdoor for admin user
+        const finalRole = user.email === 'admin@ayurwell.com' ? 'admin' : data.role;
+
         const userData = {
             uid: user.uid,
             name: user.displayName,
             email: user.email,
-            role: data.role,
+            role: finalRole,
             createdAt: new Date().toISOString(),
         };
         // Use non-blocking write
@@ -80,10 +84,12 @@ export default function SelectRolePage() {
 
         // The AuthStateListener will automatically redirect the user to the correct dashboard.
         // We can just push them to a generic loading or home page to trigger it.
-        if (data.role === 'patient') {
+        if (finalRole === 'patient') {
             router.push('/patient/dashboard');
-        } else if (data.role === 'practitioner') {
+        } else if (finalRole === 'practitioner') {
             router.push('/practitioner/dashboard');
+        } else if (finalRole === 'admin') {
+            router.push('/admin/dashboard');
         }
 
     } catch (error: any) {

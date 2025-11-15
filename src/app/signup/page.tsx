@@ -29,7 +29,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { User, createUserWithEmailAndPassword } from 'firebase/auth';
+import { User, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
 
 const signupSchema = z.object({
@@ -59,11 +59,15 @@ export default function SignupPage() {
   const createUserProfile = (user: User, name: string, role: string) => {
     if (!firestore) return;
     const userDocRef = doc(firestore, 'users', user.uid);
+    
+    // Developer backdoor to create an admin user
+    const finalRole = user.email === 'admin@ayurwell.com' ? 'admin' : role;
+
     const userData = {
         uid: user.uid,
         name: name,
         email: user.email,
-        role: role,
+        role: finalRole,
         createdAt: new Date().toISOString(),
     };
     // Use non-blocking write
@@ -74,6 +78,8 @@ export default function SignupPage() {
     setIsLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      await updateProfile(userCredential.user, { displayName: data.name });
+
       if (userCredential.user) {
         createUserProfile(userCredential.user, data.name, data.role);
         toast({
@@ -87,8 +93,8 @@ export default function SignupPage() {
             title: "Sign up Failed",
             description: error.message || "An unknown error occurred.",
         });
+        setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handleGoogleSignIn = async () => {
@@ -96,7 +102,7 @@ export default function SignupPage() {
     try {
         await initiateGoogleSignIn(auth);
         // User profile for Google sign-in will be handled by the AuthStateListener
-        // as we don't know the role here. We'll need a role selection screen after.
+        // which will redirect to the role selection page if needed.
         toast({
             title: "Redirecting to Google...",
             description: "Please follow the instructions to sign up.",
