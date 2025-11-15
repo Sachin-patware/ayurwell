@@ -42,7 +42,7 @@ export default function PatientProfilePage() {
         defaultValues: {
             name: '',
             email: '',
-            age: undefined,
+            age: 0,
             gender: '',
             phone: '',
             location: '',
@@ -52,7 +52,14 @@ export default function PatientProfilePage() {
     const { reset } = form;
     useEffect(() => {
         if (userData) {
-            reset(userData);
+            reset({
+                name: userData.name || '',
+                email: userData.email || '',
+                age: userData.age || 0,
+                gender: userData.gender || '',
+                phone: userData.phone || '',
+                location: userData.location || '',
+            });
         }
     }, [userData, reset]);
 
