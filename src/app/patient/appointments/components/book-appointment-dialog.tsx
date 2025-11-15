@@ -50,7 +50,7 @@ export function BookAppointmentDialog() {
 
         try {
             const appointmentsCollection = collection(firestore, 'appointments');
-            addDocumentNonBlocking(appointmentsCollection, appointmentData);
+            await addDocumentNonBlocking(appointmentsCollection, appointmentData);
             
             toast({
                 title: "Appointment Booked!",

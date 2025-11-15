@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Calendar, PlusCircle, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useCollection, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking } from "@/firebase";
+import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import type { Appointment } from "@/lib/data-types";
 import { format } from 'date-fns';
@@ -15,7 +15,7 @@ export default function AppointmentsPage() {
     const firestore = useFirestore();
 
     const appointmentsQuery = useMemoFirebase(() => {
-        if (!user) return null;
+        if (!user || !firestore) return null;
         return query(
             collection(firestore, 'appointments'),
             where('patientId', '==', user.uid),
