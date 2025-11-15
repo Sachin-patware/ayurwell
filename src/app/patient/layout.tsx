@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Link from "next/link";
 import { Bell, LogOut, User, LayoutDashboard, NotebookPen, MessageSquare, Calendar, ShieldCheck } from "lucide-react";
 import { useAuth, useUser } from "@/firebase";
@@ -29,7 +28,6 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
         router.push('/login');
     };
 
-    const patientAvatar = PlaceHolderImages.find(img => img.id === "avatar-1");
     const userName = user?.displayName || "Patient";
 
     const navItems = [
@@ -59,7 +57,7 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="icon" className="rounded-full">
                                 <Avatar>
-                                    {patientAvatar && <AvatarImage src={patientAvatar.imageUrl} alt={userName} />}
+                                    {user?.photoURL && <AvatarImage src={user.photoURL} alt={userName} referrerPolicy="no-referrer" />}
                                     <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="sr-only">Toggle user menu</span>
