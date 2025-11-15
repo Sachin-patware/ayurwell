@@ -16,7 +16,7 @@ export function AuthStateListener() {
       return; // Wait until user state is determined and firestore is available
     }
 
-    const publicRoutes = ['/', '/login', '/signup', '/select-role'];
+    const publicRoutes = ['/', '/login', '/signup', '/select-role', '/forgot-password'];
     const isPublicRoute = publicRoutes.includes(pathname);
     
     if (user) {
@@ -27,11 +27,11 @@ export function AuthStateListener() {
           const userData = docSnap.data();
           const role = userData.role;
           
-          if (role === 'admin' && !pathname.startsWith('/admin')) {
+          if (role === 'admin' && pathname !== '/admin/dashboard') {
             router.push('/admin/dashboard');
-          } else if (role === 'practitioner' && !pathname.startsWith('/practitioner')) {
+          } else if (role === 'practitioner' && pathname !== '/practitioner/dashboard') {
             router.push('/practitioner/dashboard');
-          } else if (role === 'patient' && !pathname.startsWith('/patient')) {
+          } else if (role === 'patient' && pathname !== '/patient/dashboard') {
             router.push('/patient/dashboard');
           } else if (pathname === '/select-role') {
             // If user has a role but is on select-role page, redirect them away.
