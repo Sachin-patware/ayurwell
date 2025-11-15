@@ -32,8 +32,7 @@ export function AuthStateListener() {
           } else if (role === 'patient' && !pathname.startsWith('/patient')) {
             router.push('/patient/dashboard');
           } else if (role === 'admin' && !pathname.startsWith('/admin')) {
-            // TODO: Create admin dashboard
-            router.push('/practitioner/dashboard'); // Default to practitioner for now
+            router.push('/admin/dashboard');
           }
 
         } else {

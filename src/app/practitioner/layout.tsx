@@ -2,7 +2,6 @@ import {
     LayoutDashboard,
     Users,
     ClipboardList,
-    BarChart3,
     Settings,
     LogOut,
     Menu,
@@ -33,10 +32,7 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', href: '/practitioner/dashboard' },
         { icon: Users, label: 'Patients', href: '/practitioner/patients' },
-        { icon: PlusCircle, label: 'Add Patient', href: '/practitioner/add-patient' },
         { icon: BookHeart, label: 'Diet Plans', href: '/practitioner/diet-plans' },
-        { icon: BarChart3, label: 'Reports', href: '/practitioner/reports' },
-        { icon: Settings, label: 'Settings', href: '#' },
     ];
 
     return (

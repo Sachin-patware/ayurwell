@@ -36,7 +36,7 @@ const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email(),
   password: z.string().min(6, "Password must be at least 6 characters."),
-  role: z.enum(['patient', 'practitioner'], { required_error: "Please select a role."}),
+  role: z.enum(['patient', 'practitioner', 'admin'], { required_error: "Please select a role."}),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -120,7 +120,7 @@ export default function SignupPage() {
           </div>
           <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
           <CardDescription>
-            Join Ayur-Aahar to start your wellness journey.
+            Join AyurWell to start your wellness journey.
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -180,6 +180,7 @@ export default function SignupPage() {
                         <SelectContent>
                           <SelectItem value="patient">Patient</SelectItem>
                           <SelectItem value="practitioner">Practitioner</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
