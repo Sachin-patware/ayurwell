@@ -48,19 +48,21 @@ export default function ForgotPasswordPage() {
     },
   });
 
-  const handleReset: SubmitHandler<ResetFormValues> = async (data) => {
+  const handleReset: SubmitHandler<ResetFormValues> = (data) => {
     setIsLoading(true);
-    try {
-      await initiatePasswordReset(auth, data.email);
-      setIsSubmitted(true);
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error.message || 'Failed to send password reset email.',
+    initiatePasswordReset(auth, data.email)
+      .then(() => {
+        setIsSubmitted(true);
+        setIsLoading(false);
+      })
+      .catch((error: any) => {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: error.message || 'Failed to send password reset email.',
+        });
+        setIsLoading(false);
       });
-    }
-    setIsLoading(false);
   };
 
   return (
