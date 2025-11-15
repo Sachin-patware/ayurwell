@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 export function AuthStateListener() {
@@ -16,7 +16,7 @@ export function AuthStateListener() {
       return; // Wait until user state is determined and firestore is available
     }
 
-    const publicRoutes = ['/', '/login', '/signup'];
+    const publicRoutes = ['/', '/login', '/signup', '/select-role'];
     const isPublicRoute = publicRoutes.includes(pathname);
     
     if (user) {
@@ -36,18 +36,11 @@ export function AuthStateListener() {
           }
 
         } else {
-          // New user from Google Sign In, profile doesn't exist yet.
-          // For now we default to patient. In a real app, you would have a role selection screen.
-          console.log("Creating user profile for new Google Sign-In user.");
-          const userData = {
-              uid: user.uid,
-              name: user.displayName,
-              email: user.email,
-              role: 'patient', // Default role
-              createdAt: new Date().toISOString(),
-          };
-          setDocumentNonBlocking(userDocRef, userData, { merge: true });
-          router.push('/patient/dashboard');
+          // New user (likely from Google Sign In), profile doesn't exist yet.
+          // Redirect to role selection page.
+          if (pathname !== '/select-role') {
+            router.push('/select-role');
+          }
         }
       });
 
