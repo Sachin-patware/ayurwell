@@ -24,13 +24,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Logo } from '@/components/logo';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 
 export default function PractitionerLayout({ children }: { children: ReactNode }) {
     const auth = useAuth();
+    const { user } = useUser();
     const router = useRouter();
 
     const handleLogout = async () => {
@@ -38,8 +38,7 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
         router.push('/login');
     };
 
-    const practitionerAvatar = PlaceHolderImages.find(img => img.id === 'practitioner-avatar');
-    const userName = auth.currentUser?.displayName || "Practitioner";
+    const userName = user?.displayName || "Practitioner";
 
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', href: '/practitioner/dashboard' },
@@ -115,7 +114,7 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="icon" className="rounded-full">
                                 <Avatar>
-                                    {practitionerAvatar && <AvatarImage src={practitionerAvatar.imageUrl} alt={userName} data-ai-hint={practitionerAvatar.imageHint} />}
+                                    {user?.photoURL && <AvatarImage src={user.photoURL} alt={userName} referrerPolicy="no-referrer" />}
                                     <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="sr-only">Toggle user menu</span>
@@ -131,14 +130,14 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                                 <Link href="#" className="cursor-pointer">Support</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                             <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer">
+                             <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-destructive">
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Logout</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </header>
-                <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background">
+                <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-muted/20">
                     {children}
                 </main>
             </div>

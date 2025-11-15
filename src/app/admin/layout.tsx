@@ -10,15 +10,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "@/components/logo";
 import { Bell, LogOut, ShieldCheck } from "lucide-react";
-import { useAuth } from "@/firebase";
+import { useAuth, useUser } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
     const auth = useAuth();
+    const { user } = useUser();
     const router = useRouter();
 
     const handleLogout = async () => {
@@ -26,10 +27,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         router.push('/login');
     };
 
-    const adminUser = {
-        name: auth.currentUser?.displayName || "Admin User",
-        email: auth.currentUser?.email || "admin@ayurwell.com"
-    }
+    const adminName = user?.displayName || "Admin";
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-background">
@@ -49,15 +47,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="icon" className="rounded-full">
                                 <Avatar>
-                                    <AvatarFallback>{adminUser.name.charAt(0)}</AvatarFallback>
+                                    {user?.photoURL && <AvatarImage src={user.photoURL} alt={adminName} referrerPolicy="no-referrer" />}
+                                    <AvatarFallback>{adminName.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="sr-only">Toggle user menu</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>{adminUser.name}</DropdownMenuLabel>
+                            <DropdownMenuLabel>{adminName}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer">
+                            <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-destructive">
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Logout</span>
                             </DropdownMenuItem>
@@ -65,7 +64,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     </DropdownMenu>
                 </div>
             </header>
-            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 bg-muted/20">
                 {children}
             </main>
         </div>

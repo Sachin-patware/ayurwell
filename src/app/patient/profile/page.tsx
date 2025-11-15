@@ -54,15 +54,15 @@ export default function PatientProfilePage() {
         }
     });
 
-    const { reset } = form;
+    const { reset, setValue } = form;
     useEffect(() => {
         if (userData) {
             reset({
-                name: userData.name || '',
-                email: userData.email || '',
+                name: userData.name || user?.displayName || '',
+                email: userData.email || user?.email || '',
                 age: userData.age || 0,
                 gender: userData.gender || '',
-                phone: userData.phone || '',
+                phone: userData.phone || user?.phoneNumber || '',
                 location: userData.location || '',
             });
         } else if (user) {
@@ -77,13 +77,19 @@ export default function PatientProfilePage() {
         }
     }, [userData, user, reset]);
 
+     // This effect ensures the form's name field is updated if the user object's displayName changes
+    useEffect(() => {
+        if (user?.displayName) {
+            setValue('name', user.displayName);
+        }
+    }, [user?.displayName, setValue]);
+
     const handleSaveChanges = async (data: ProfileFormValues) => {
-        if (!user || !firestore) return;
+        if (!user || !firestore || !auth.currentUser) return;
         setIsSaving(true);
         
         const userRef = doc(firestore, 'users', user.uid);
         try {
-            // We only update fields that are in our schema, leaving others (like role) untouched
             const dataToSave = {
                 name: data.name,
                 age: data.age,
@@ -92,7 +98,9 @@ export default function PatientProfilePage() {
                 location: data.location,
             };
 
-            await updateProfile(user, { displayName: data.name });
+            if (auth.currentUser.displayName !== data.name) {
+                await updateProfile(auth.currentUser, { displayName: data.name });
+            }
             setDocumentNonBlocking(userRef, dataToSave, { merge: true });
 
             toast({
@@ -136,7 +144,7 @@ export default function PatientProfilePage() {
     };
     
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (!event.target.files || event.target.files.length === 0 || !user) {
+        if (!event.target.files || event.target.files.length === 0 || !user || !auth.currentUser) {
             return;
         }
 
@@ -150,12 +158,15 @@ export default function PatientProfilePage() {
             await uploadBytes(imageRef, file);
             const photoURL = await getDownloadURL(imageRef);
 
-            await updateProfile(user, { photoURL });
-            await user.reload(); // This is the crucial step to refresh the user object
+            await updateProfile(auth.currentUser, { photoURL });
             
             const userDocRef = doc(firestore, 'users', user.uid);
             setDocumentNonBlocking(userDocRef, { photoURL }, { merge: true });
 
+            // We don't need to call user.reload() because the useUser hook will
+            // automatically react to onAuthStateChanged events. Forcing a reload
+            // can sometimes cause race conditions with React's render cycle.
+            // The UI will update once the auth state propagates.
             toast({
                 title: 'Photo Uploaded!',
                 description: 'Your profile picture has been updated.',

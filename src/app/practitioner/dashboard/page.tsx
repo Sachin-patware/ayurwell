@@ -30,20 +30,18 @@ export default function PractitionerDashboard() {
   const patientAvatars = new Map(PlaceHolderImages.filter(img => img.id.startsWith('avatar')).map(img => [img.id, img]));
 
   return (
-    <>
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold font-headline">Practitioner Dashboard</h1>
-        <div className="flex gap-2">
-            <Button asChild>
-                <Link href="/practitioner/add-patient">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Patient
-                </Link>
-            </Button>
-        </div>
+        <h1 className="text-3xl font-bold font-headline">Practitioner Dashboard</h1>
+        <Button asChild>
+            <Link href="/practitioner/add-patient">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add New Patient
+            </Link>
+        </Button>
       </div>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
-        <Card className="shadow-md hover:shadow-lg transition-shadow">
+        <Card className="shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Patients</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -57,7 +55,7 @@ export default function PractitionerDashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card className="shadow-md hover:shadow-lg transition-shadow">
+        <Card className="shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Appointments Today
@@ -71,9 +69,9 @@ export default function PractitionerDashboard() {
             </p>
           </CardContent>
         </Card>
-        <Card className="shadow-md hover:shadow-lg transition-shadow">
+        <Card className="shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Follow-ups</CardTitle>
+            <CardTitle className="text-sm font-medium">Follow-ups Required</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -87,7 +85,7 @@ export default function PractitionerDashboard() {
         </Card>
       </div>
       <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
-        <Card className="xl:col-span-2 shadow-md">
+        <Card className="xl:col-span-2 shadow-sm">
           <CardHeader>
             <CardTitle>Today's Appointments</CardTitle>
             <CardDescription>
@@ -127,7 +125,7 @@ export default function PractitionerDashboard() {
             </Table>
           </CardContent>
         </Card>
-        <Card className="shadow-md">
+        <Card className="shadow-sm">
           <CardHeader>
             <CardTitle>Recent Patient Activity</CardTitle>
             <CardDescription>
@@ -155,6 +153,6 @@ export default function PractitionerDashboard() {
           </CardContent>
         </Card>
       </div>
-    </>
+    </div>
   );
 }
