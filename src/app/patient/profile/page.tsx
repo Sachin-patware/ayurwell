@@ -1,11 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2, Save, KeyRound, Camera } from 'lucide-react';
 import { doc } from 'firebase/firestore';
+import { sendPasswordResetEmail, updateProfile } from 'firebase/auth';
+import { getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
+import { getStorage } from 'firebase/storage';
+
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useAuth, useFirestore, useUser, setDocumentNonBlocking, useDoc, useMemoFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { sendPasswordResetEmail } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const profileSchema = z.object({
@@ -33,6 +36,8 @@ export default function PatientProfilePage() {
     const auth = useAuth();
     const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     const userDocRef = useMemoFirebase(() => (user ? doc(firestore, 'users', user.uid) : null), [user, firestore]);
     const { data: userData, isLoading: isDocLoading } = useDoc<ProfileFormValues>(userDocRef);
@@ -60,8 +65,17 @@ export default function PatientProfilePage() {
                 phone: userData.phone || '',
                 location: userData.location || '',
             });
+        } else if (user) {
+             reset({
+                name: user.displayName || '',
+                email: user.email || '',
+                age: 0,
+                gender: '',
+                phone: user.phoneNumber || '',
+                location: '',
+            });
         }
-    }, [userData, reset]);
+    }, [userData, user, reset]);
 
     const handleSaveChanges = async (data: ProfileFormValues) => {
         if (!user || !firestore) return;
@@ -78,6 +92,7 @@ export default function PatientProfilePage() {
                 location: data.location,
             };
 
+            await updateProfile(user, { displayName: data.name });
             setDocumentNonBlocking(userRef, dataToSave, { merge: true });
 
             toast({
@@ -120,6 +135,41 @@ export default function PatientProfilePage() {
         }
     };
     
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!event.target.files || event.target.files.length === 0 || !user) {
+            return;
+        }
+
+        const file = event.target.files[0];
+        const storage = getStorage();
+        const imageRef = storageRef(storage, `profile-pictures/${user.uid}`);
+
+        setIsUploading(true);
+
+        try {
+            await uploadBytes(imageRef, file);
+            const photoURL = await getDownloadURL(imageRef);
+
+            await updateProfile(user, { photoURL });
+            
+            const userDocRef = doc(firestore, 'users', user.uid);
+            setDocumentNonBlocking(userDocRef, { photoURL }, { merge: true });
+
+            toast({
+                title: 'Photo Uploaded!',
+                description: 'Your profile picture has been updated.',
+            });
+        } catch (error: any) {
+             toast({
+                variant: 'destructive',
+                title: 'Upload Failed',
+                description: error.message || 'Could not upload your photo.',
+            });
+        } finally {
+            setIsUploading(false);
+        }
+    };
+    
     const isLoading = isUserLoading || isDocLoading;
 
     return (
@@ -148,8 +198,21 @@ export default function PatientProfilePage() {
                                                 {user?.displayName?.charAt(0) || 'U'}
                                             </AvatarFallback>
                                         </Avatar>
-                                        <Button size="icon" type="button" className="absolute -bottom-2 -right-2 rounded-full h-8 w-8">
-                                            <Camera className="h-4 w-4" />
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleFileChange}
+                                            className="hidden"
+                                            accept="image/png, image/jpeg"
+                                        />
+                                        <Button 
+                                            size="icon" 
+                                            type="button" 
+                                            className="absolute -bottom-2 -right-2 rounded-full h-8 w-8"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isUploading}
+                                        >
+                                            {isUploading ? <Loader2 className="h-4 w-4 animate-spin"/> : <Camera className="h-4 w-4" />}
                                             <span className="sr-only">Change photo</span>
                                         </Button>
                                     </div>
@@ -229,7 +292,7 @@ export default function PatientProfilePage() {
                                 <Button variant="outline" type="button" onClick={handleChangePassword}>
                                     <KeyRound className="mr-2"/> Change Password
                                 </Button>
-                                <Button type="submit" disabled={isSaving}>
+                                <Button type="submit" disabled={isSaving || isUploading}>
                                     {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <Save className="mr-2" />}
                                     Save Changes
                                 </Button>
