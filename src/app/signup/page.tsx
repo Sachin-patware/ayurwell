@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/logo';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { initiateEmailSignUp, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
 import {
@@ -28,11 +28,15 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { User, createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc } from 'firebase/firestore';
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email(),
   password: z.string().min(6, "Password must be at least 6 characters."),
+  role: z.enum(['patient', 'practitioner'], { required_error: "Please select a role."}),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -40,6 +44,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const auth = useAuth();
+  const firestore = useFirestore();
   const { toast } = useToast();
 
   const form = useForm<SignupFormValues>({
@@ -50,36 +55,72 @@ export default function SignupPage() {
       password: '',
     },
   });
+  
+  const createUserProfile = (user: User, name: string, role: string) => {
+    if (!firestore) return;
+    const userDocRef = doc(firestore, 'users', user.uid);
+    const userData = {
+        uid: user.uid,
+        name: name,
+        email: user.email,
+        role: role,
+        createdAt: new Date().toISOString(),
+    };
+    // Use non-blocking write
+    setDocumentNonBlocking(userDocRef, userData, { merge: true });
+  }
 
-  const handleSignup: SubmitHandler<SignupFormValues> = (data) => {
+  const handleSignup: SubmitHandler<SignupFormValues> = async (data) => {
     setIsLoading(true);
-    initiateEmailSignUp(auth, data.email, data.password);
-    // TODO: Need to update user profile with name after signup
-    toast({
-      title: "Creating Account...",
-      description: "You will be logged in and redirected shortly.",
-    });
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+      if (userCredential.user) {
+        createUserProfile(userCredential.user, data.name, data.role);
+        toast({
+          title: "Account Created!",
+          description: "You will be logged in and redirected shortly.",
+        });
+      }
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: "Sign up Failed",
+            description: error.message || "An unknown error occurred.",
+        });
+    }
+    setIsLoading(false);
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    initiateGoogleSignIn(auth);
-    toast({
-        title: "Redirecting to Google...",
-        description: "Please follow the instructions to sign up.",
-    });
+    try {
+        await initiateGoogleSignIn(auth);
+        // User profile for Google sign-in will be handled by the AuthStateListener
+        // as we don't know the role here. We'll need a role selection screen after.
+        toast({
+            title: "Redirecting to Google...",
+            description: "Please follow the instructions to sign up.",
+        });
+    } catch (error: any) {
+         toast({
+            variant: 'destructive',
+            title: "Google Sign-In Failed",
+            description: error.message || "Could not sign in with Google.",
+        });
+    }
+    setIsLoading(false);
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-sm shadow-2xl">
+      <Card className="w-full max-w-sm shadow-2xl rounded-2xl">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <Logo />
           </div>
           <CardTitle className="text-2xl font-headline">Create an Account</CardTitle>
           <CardDescription>
-            Enter your details to get started with AyurWell
+            Join Ayur-Aahar to start your wellness journey.
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -124,11 +165,42 @@ export default function SignupPage() {
                   </FormItem>
                 )}
               />
+               <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>I am a...</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="patient">Patient</SelectItem>
+                          <SelectItem value="practitioner">Practitioner</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
               <Button className="w-full" type="submit" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create Account'}
               </Button>
+               <div className="relative w-full">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">
+                        Or continue with
+                        </span>
+                    </div>
+                </div>
               <Button variant="outline" className="w-full" type="button" onClick={handleGoogleSignIn} disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (
                   <>
@@ -139,7 +211,7 @@ export default function SignupPage() {
               </Button>
               <p className="text-xs text-center text-muted-foreground">
                 Already have an account?{' '}
-                <Link href="/login" className="underline hover:text-primary">
+                <Link href="/login" className="underline hover:text-primary font-semibold">
                   Login
                 </Link>
               </p>

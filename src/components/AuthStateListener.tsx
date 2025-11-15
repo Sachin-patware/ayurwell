@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 export function AuthStateListener() {
@@ -12,8 +12,8 @@ export function AuthStateListener() {
   const firestore = useFirestore();
 
   useEffect(() => {
-    if (isUserLoading) {
-      return; // Wait until user state is determined
+    if (isUserLoading || !firestore) {
+      return; // Wait until user state is determined and firestore is available
     }
 
     const publicRoutes = ['/', '/login', '/signup'];
@@ -32,19 +32,23 @@ export function AuthStateListener() {
           } else if (role === 'patient' && !pathname.startsWith('/patient')) {
             router.push('/patient/dashboard');
           } else if (role === 'admin' && !pathname.startsWith('/admin')) {
-            router.push('/admin');
-          } else if (!role && isPublicRoute) {
-            // New user, default to patient dashboard for now
-            // TODO: Implement a role selection screen
-            router.push('/patient/dashboard');
+            // TODO: Create admin dashboard
+            router.push('/practitioner/dashboard'); // Default to practitioner for now
           }
 
         } else {
-          // New user, default to patient dashboard for now
-          // This is where you might create the user document with a default role
-           if (isPublicRoute || pathname.startsWith('/login') || pathname.startsWith('/signup')) {
-             router.push('/patient/dashboard');
-           }
+          // New user from Google Sign In, profile doesn't exist yet.
+          // For now we default to patient. In a real app, you would have a role selection screen.
+          console.log("Creating user profile for new Google Sign-In user.");
+          const userData = {
+              uid: user.uid,
+              name: user.displayName,
+              email: user.email,
+              role: 'patient', // Default role
+              createdAt: new Date().toISOString(),
+          };
+          setDocumentNonBlocking(userDocRef, userData, { merge: true });
+          router.push('/patient/dashboard');
         }
       });
 

@@ -3,11 +3,10 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { AuthStateListener } from '@/components/AuthStateListener';
 
 export const metadata: Metadata = {
-  title: 'AyurWell - Ayurvedic Diet Management',
+  title: 'Ayur-Aahar - Ayurvedic Diet Management',
   description: 'Harmonize Your Health with Personalized Ayurvedic Diet Plans.',
 };
 
@@ -27,7 +26,6 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <AuthStateListener />
           {children}
-          <FirebaseErrorListener />
         </FirebaseClientProvider>
         <Toaster />
       </body>

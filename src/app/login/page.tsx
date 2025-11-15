@@ -50,34 +50,52 @@ export default function LoginPage() {
     },
   });
 
-  const handleLogin: SubmitHandler<LoginFormValues> = (data) => {
+  const handleLogin: SubmitHandler<LoginFormValues> = async (data) => {
     setIsLoading(true);
-    initiateEmailSignIn(auth, data.email, data.password);
-    toast({
-      title: "Logging In...",
-      description: "You will be redirected shortly.",
-    });
+    try {
+        await initiateEmailSignIn(auth, data.email, data.password);
+        toast({
+            title: "Logged In",
+            description: "You will be redirected to your dashboard.",
+        });
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: "Login Failed",
+            description: error.message || "An unknown error occurred.",
+        });
+    }
+    setIsLoading(false);
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setIsLoading(true);
-    initiateGoogleSignIn(auth);
-    toast({
-        title: "Redirecting to Google...",
-        description: "Please follow the instructions to sign in.",
-    });
+    try {
+        await initiateGoogleSignIn(auth);
+        toast({
+            title: "Redirecting to Google...",
+            description: "Please follow the instructions to sign in.",
+        });
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: "Google Sign-In Failed",
+            description: error.message || "Could not sign in with Google.",
+        });
+    }
+    setIsLoading(false);
   };
   
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-sm shadow-2xl">
+      <Card className="w-full max-w-sm shadow-2xl rounded-2xl">
         <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
                 <Logo />
             </div>
           <CardTitle className="text-2xl font-headline">Welcome Back</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your credentials to access your dashboard.
           </CardDescription>
         </CardHeader>
         <Form {...form}>
@@ -114,6 +132,16 @@ export default function LoginPage() {
                 <Button className="w-full" type="submit" disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Login'}
                 </Button>
+                <div className="relative w-full">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">
+                        Or continue with
+                        </span>
+                    </div>
+                </div>
                 <Button variant="outline" className="w-full" type="button" onClick={handleGoogleSignIn} disabled={isLoading}>
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (
                         <>
@@ -124,7 +152,7 @@ export default function LoginPage() {
                 </Button>
                 <p className="text-xs text-center text-muted-foreground">
                 Don't have an account?{' '}
-                <Link href="/signup" className="underline hover:text-primary">
+                <Link href="/signup" className="underline hover:text-primary font-semibold">
                     Sign up
                 </Link>
                 </p>
