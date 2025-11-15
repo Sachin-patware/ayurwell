@@ -1,12 +1,11 @@
+'use client';
+
 import {
     LayoutDashboard,
     Users,
-    ClipboardList,
-    BarChart3,
     Settings,
     LogOut,
     Menu,
-    PlusCircle,
     BookHeart,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -25,18 +24,26 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Logo } from '@/components/logo';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { practitioner } from '@/lib/placeholder-data';
+import { useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export default function PractitionerLayout({ children }: { children: ReactNode }) {
-    const practitionerAvatar = PlaceHolderImages.find(img => img.id === practitioner.avatar);
+    const auth = useAuth();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await signOut(auth);
+        router.push('/login');
+    };
+
+    const practitionerAvatar = PlaceHolderImages.find(img => img.id === 'practitioner-avatar');
+    const userName = auth.currentUser?.displayName || "Practitioner";
 
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', href: '/practitioner/dashboard' },
         { icon: Users, label: 'Patients', href: '/practitioner/patients' },
-        { icon: PlusCircle, label: 'Add Patient', href: '/practitioner/add-patient' },
         { icon: BookHeart, label: 'Diet Plans', href: '/practitioner/diet-plans' },
-        { icon: BarChart3, label: 'Reports', href: '/practitioner/reports' },
-        { icon: Settings, label: 'Settings', href: '#' },
     ];
 
     return (
@@ -61,10 +68,10 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                         </nav>
                     </div>
                     <div className="mt-auto p-4">
-                       <Link href="/login" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted -mx-3">
+                       <button onClick={handleLogout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted -mx-3">
                             <LogOut className="h-4 w-4" />
                             <span>Logout</span>
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -94,10 +101,10 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                                 ))}
                             </nav>
                              <div className="mt-auto">
-                                <Link href="/login" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted">
+                                <button onClick={handleLogout} className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted w-full">
                                     <LogOut className="h-5 w-5" />
                                     Logout
-                                </Link>
+                                </button>
                             </div>
                         </SheetContent>
                     </Sheet>
@@ -106,14 +113,14 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="icon" className="rounded-full">
                                 <Avatar>
-                                    {practitionerAvatar && <AvatarImage src={practitionerAvatar.imageUrl} alt={practitioner.name} data-ai-hint={practitionerAvatar.imageHint} />}
-                                    <AvatarFallback>{practitioner.name.charAt(0)}</AvatarFallback>
+                                    {practitionerAvatar && <AvatarImage src={practitionerAvatar.imageUrl} alt={userName} data-ai-hint={practitionerAvatar.imageHint} />}
+                                    <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="sr-only">Toggle user menu</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>{practitioner.name}</DropdownMenuLabel>
+                            <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <Link href="#" className="cursor-pointer">Settings</Link>
@@ -122,11 +129,9 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                                 <Link href="#" className="cursor-pointer">Support</Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                             <DropdownMenuItem asChild>
-                                <Link href="/login" className="flex items-center cursor-pointer">
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    <span>Logout</span>
-                                </Link>
+                             <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer">
+                                <LogOut className="mr-2 h-4 w-4" />
+                                <span>Logout</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
