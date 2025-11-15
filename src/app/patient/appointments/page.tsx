@@ -25,8 +25,8 @@ export default function AppointmentsPage() {
 
     const { data: appointments, isLoading, error } = useCollection<Appointment>(appointmentsQuery);
 
-    const upcomingAppointments = appointments?.filter(a => new Date(a.datetime) >= new Date()) || [];
-    const pastAppointments = appointments?.filter(a => new Date(a.datetime) < new Date()) || [];
+    const upcomingAppointments = appointments?.filter(a => new Date(a.datetime) >= new Date() && a.status === 'scheduled') || [];
+    const pastAppointments = appointments?.filter(a => new Date(a.datetime) < new Date() || a.status !== 'scheduled') || [];
 
     return (
         <div>
@@ -50,7 +50,11 @@ export default function AppointmentsPage() {
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
                         </div>
                     ) : error ? (
-                        <p className="text-destructive text-center">Could not load appointments.</p>
+                        <div className="text-destructive text-center p-8 bg-destructive/10 rounded-lg">
+                            <p className="font-semibold">Error Loading Appointments</p>
+                            <p className="text-sm">Could not load your appointments due to a permission issue. Please contact support.</p>
+                             <p className="text-xs mt-2 text-red-700">{error.message}</p>
+                        </div>
                     ) : (
                         <>
                             <div>
@@ -65,8 +69,9 @@ export default function AppointmentsPage() {
                                     <p className="text-muted-foreground text-sm">No upcoming appointments.</p>
                                 )}
                             </div>
+                             <div className="border-t my-6" />
                             <div>
-                                <h3 className="text-lg font-semibold mb-2">Past</h3>
+                                <h3 className="text-lg font-semibold mb-2">History</h3>
                                  {pastAppointments.length > 0 ? (
                                     <div className="space-y-4">
                                         {pastAppointments.map(appointment => (
@@ -86,17 +91,26 @@ export default function AppointmentsPage() {
 }
 
 function AppointmentCard({ appointment }: { appointment: Appointment }) {
-    const isUpcoming = new Date(appointment.datetime) >= new Date();
+    const isUpcoming = appointment.status === 'scheduled';
+    
+    const statusVariant: "default" | "secondary" | "destructive" = 
+        appointment.status === 'scheduled' ? 'default'
+        : appointment.status === 'completed' ? 'secondary'
+        : 'destructive';
+
     return (
         <Card className={`p-4 flex justify-between items-center ${!isUpcoming ? 'bg-muted/50' : ''}`}>
             <div>
                 <p className="font-semibold">{appointment.title || "Consultation"}</p>
-                <p className="text-sm text-muted-foreground">With Dr. Anjali Verma</p>
+                <p className="text-sm text-muted-foreground">With {appointment.doctorName}</p>
                 <p className={`text-sm font-bold mt-1 ${isUpcoming ? 'text-primary' : 'text-muted-foreground'}`}>
                     {format(new Date(appointment.datetime), "MMMM dd, yyyy 'at' hh:mm a")}
                 </p>
             </div>
-            <Badge variant={isUpcoming ? 'default' : 'secondary'}>{appointment.status}</Badge>
+            <div className="flex items-center gap-4">
+                <Badge variant={statusVariant}>{appointment.status}</Badge>
+                {isUpcoming && <Button variant="outline" size="sm">Cancel</Button>}
+            </div>
         </Card>
     );
 }

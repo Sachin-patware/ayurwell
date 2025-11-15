@@ -100,16 +100,25 @@ service cloud.firestore {
     
     // appointments - Scheduling between patient and doctor
     match /appointments/{appointmentId} {
-      // A patient can create their own appointment.
-      allow create: if isOwner(request.resource.data.patientId);
+      // A patient can create their own appointment if the patientId matches their UID.
+      allow create: if isSignedIn() && request.resource.data.patientId == request.auth.uid;
+      
       // The patient, their assigned doctor, or an admin can view appointments.
-      allow get: if isOwner(resource.data.patientId) || isDoctorForPatient(resource.data.patientId) || isRole('admin');
-      // Patient can cancel, doctor can update status.
-      allow update: if isOwner(resource.data.patientId) || isDoctorForPatient(resource.data.patientId) || isRole('admin');
+      allow get: if isOwner(resource.data.patientId) || isOwner(resource.data.doctorId) || isRole('admin');
+
+      // Patient can cancel (update status to 'cancelled').
+      // Doctor can update status to 'completed' or 'cancelled'.
+      allow update: if (isOwner(resource.data.patientId) && request.resource.data.status == 'cancelled') || 
+                       (isOwner(resource.data.doctorId)) || 
+                       isRole('admin');
+
+      // Admins can delete.
       allow delete: if isRole('admin');
 
-      // A patient can query for their own appointments. A doctor for their patients, an admin for all.
-      allow list: if (isRole('patient') && request.query.where.patientId == request.auth.uid) || isRole('doctor') || isRole('admin');
+      // A patient can query for their own appointments. A doctor for theirs. An admin for all.
+      allow list: if (isRole('patient') && request.query.where.patientId == request.auth.uid) ||
+                     (isRole('doctor') && request.query.where.doctorId == request.auth.uid) ||
+                     isRole('admin');
     }
 
     // dailyLogs - Patient's daily progress tracking

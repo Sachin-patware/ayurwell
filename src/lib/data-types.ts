@@ -13,9 +13,12 @@ export type Appointment = {
   id: string;
   title?: string;
   patientId: string;
+  patientName?: string;
   doctorId: string;
+  doctorName?: string;
   datetime: string; // ISO 8601 format
   status: 'scheduled' | 'completed' | 'cancelled';
+  createdAt: string;
 };
 
 export type DietPlanSummary = {

@@ -42,31 +42,35 @@ export function BookAppointmentDialog() {
 
         const appointmentData = {
             patientId: user.uid,
+            patientName: user.displayName,
             doctorId: doctorId,
+            doctorName: "Dr. Anjali Verma", // Placeholder
             datetime: selectedDate.toISOString(),
             status: 'scheduled',
             title: 'Follow-up Consultation',
+            createdAt: new Date().toISOString()
         };
 
-        try {
-            const appointmentsCollection = collection(firestore, 'appointments');
-            await addDocumentNonBlocking(appointmentsCollection, appointmentData);
-            
-            toast({
-                title: "Appointment Booked!",
-                description: "Your appointment has been scheduled successfully.",
-                className: "bg-primary text-primary-foreground",
+        const appointmentsCollection = collection(firestore, 'appointments');
+        addDocumentNonBlocking(appointmentsCollection, appointmentData)
+            .then(() => {
+                toast({
+                    title: "Appointment Booked!",
+                    description: "Your appointment has been scheduled successfully.",
+                    className: "bg-primary text-primary-foreground",
+                });
+                setIsOpen(false);
+            })
+            .catch((error: any) => {
+                 toast({
+                    variant: "destructive",
+                    title: "Booking Failed",
+                    description: error.message || "Could not book appointment. Please try again.",
+                });
+            })
+            .finally(() => {
+                setIsBooking(false);
             });
-            setIsOpen(false);
-        } catch (error: any) {
-            toast({
-                variant: "destructive",
-                title: "Booking Failed",
-                description: error.message || "Could not book appointment. Please try again.",
-            });
-        } finally {
-            setIsBooking(false);
-        }
     };
 
     return (

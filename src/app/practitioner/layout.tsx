@@ -7,6 +7,7 @@ import {
     LogOut,
     Menu,
     BookHeart,
+    Calendar,
 } from 'lucide-react';
 import Link from 'next/link';
 import { ReactNode } from 'react';
@@ -43,6 +44,7 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', href: '/practitioner/dashboard' },
         { icon: Users, label: 'Patients', href: '/practitioner/patients' },
+        { icon: Calendar, label: 'Appointments', href: '/practitioner/appointments'},
         { icon: BookHeart, label: 'Diet Plans', href: '/practitioner/diet-plans' },
     ];
 
