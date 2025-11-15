@@ -7,14 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { patients } from "@/lib/placeholder-data";
 import DietPlan from "./components/diet-plan";
 import DailyLog from "./components/daily-log";
 import WeeklyProgressChart from "./components/weekly-progress-chart";
+import { useUser } from "@/firebase";
 
 
 export default function PatientDashboard() {
-  const patient = patients[0];
+  const { user } = useUser();
+  const patientName = user?.displayName?.split(' ')[0] || "there";
 
   return (
     <>
@@ -24,7 +25,7 @@ export default function PatientDashboard() {
           <Card className="shadow-md">
               <CardHeader>
                   <CardTitle className="font-headline text-2xl">
-                      Welcome back, {patient.name.split(' ')[0]}!
+                      Welcome back, {patientName}!
                   </CardTitle>
                   <CardDescription>
                       Here is your plan for today. Stay consistent on your path to wellness.

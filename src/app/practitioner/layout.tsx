@@ -24,7 +24,6 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Logo } from '@/components/logo';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { practitioner } from '@/lib/placeholder-data';
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
@@ -38,7 +37,8 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
         router.push('/login');
     };
 
-    const practitionerAvatar = PlaceHolderImages.find(img => img.id === practitioner.avatar);
+    const practitionerAvatar = PlaceHolderImages.find(img => img.id === 'practitioner-avatar');
+    const userName = auth.currentUser?.displayName || "Practitioner";
 
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', href: '/practitioner/dashboard' },
@@ -113,14 +113,14 @@ export default function PractitionerLayout({ children }: { children: ReactNode }
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="icon" className="rounded-full">
                                 <Avatar>
-                                    {practitionerAvatar && <AvatarImage src={practitionerAvatar.imageUrl} alt={practitioner.name} data-ai-hint={practitionerAvatar.imageHint} />}
-                                    <AvatarFallback>{practitioner.name.charAt(0)}</AvatarFallback>
+                                    {practitionerAvatar && <AvatarImage src={practitionerAvatar.imageUrl} alt={userName} data-ai-hint={practitionerAvatar.imageHint} />}
+                                    <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="sr-only">Toggle user menu</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>{auth.currentUser?.displayName || practitioner.name}</DropdownMenuLabel>
+                            <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <Link href="#" className="cursor-pointer">Settings</Link>

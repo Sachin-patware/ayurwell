@@ -28,9 +28,10 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
         router.push('/login');
     };
 
-    // For demo, we'll use the first patient
-    const patient = patients[0];
-    const patientAvatar = PlaceHolderImages.find(img => img.id === patient.avatar);
+    // For demo, we'll use a placeholder avatar
+    const patientAvatar = PlaceHolderImages.find(img => img.id === "avatar-1");
+
+    const userName = auth.currentUser?.displayName || "Patient";
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-background">
@@ -46,14 +47,14 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="icon" className="rounded-full">
                                 <Avatar>
-                                    {patientAvatar && <AvatarImage src={patientAvatar.imageUrl} alt={patient.name} />}
-                                    <AvatarFallback>{patient.name.charAt(0)}</AvatarFallback>
+                                    {patientAvatar && <AvatarImage src={patientAvatar.imageUrl} alt={userName} />}
+                                    <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <span className="sr-only">Toggle user menu</span>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>{auth.currentUser?.displayName || patient.name}</DropdownMenuLabel>
+                            <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                                 <Link href="#" className="flex items-center cursor-pointer">
