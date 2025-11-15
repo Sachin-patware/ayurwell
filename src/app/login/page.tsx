@@ -1,7 +1,11 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Stethoscope, User } from 'lucide-react';
+import { Stethoscope, User, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -16,28 +20,97 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Logo } from '@/components/logo';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+
+
+const practitionerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+});
+
+const patientSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  doctorId: z.string().min(1, "Doctor ID is required."),
+});
+
+type PractitionerFormValues = z.infer<typeof practitionerSchema>;
+type PatientFormValues = z.infer<typeof patientSchema>;
 
 export default function LoginPage() {
   const [role, setRole] = useState('practitioner');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const auth = useAuth();
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (role === 'practitioner') {
-      router.push('/practitioner/dashboard');
-    } else {
-      router.push('/patient/dashboard');
+  const practitionerForm = useForm<PractitionerFormValues>({
+    resolver: zodResolver(practitionerSchema),
+    defaultValues: {
+      email: 'dr.anjali@ayurwell.com',
+      password: 'password',
+    },
+  });
+
+  const patientForm = useForm<PatientFormValues>({
+    resolver: zodResolver(patientSchema),
+    defaultValues: {
+      email: 'priya.sharma@example.com',
+      password: 'password',
+      doctorId: 'D12345',
+    },
+  });
+
+  const handleLogin: SubmitHandler<PractitionerFormValues | PatientFormValues> = async (data) => {
+    setIsLoading(true);
+    try {
+      initiateEmailSignIn(auth, data.email, data.password);
+      // Non-blocking, so we'll rely on onAuthStateChanged to redirect
+      // For now, let's keep the router push for immediate feedback
+      toast({
+        title: "Logging In...",
+        description: "You will be redirected shortly.",
+      });
+      // The redirection will be handled by a listener in a parent component
+      // but for now, we'll keep the manual push for demonstration
+       if (role === 'practitioner') {
+         setTimeout(() => router.push('/practitioner/dashboard'), 1000);
+       } else {
+         setTimeout(() => router.push('/patient/dashboard'), 1000);
+       }
+
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "An unknown error occurred.",
+      });
+      setIsLoading(false);
     }
   };
-
+  
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex justify-center">
-            <Logo />
+          <Logo />
         </div>
-        <Tabs defaultValue="practitioner" className="w-full" onValueChange={setRole}>
+        <Tabs defaultValue="practitioner" className="w-full" onValueChange={(value) => {
+          setRole(value);
+          practitionerForm.reset();
+          patientForm.reset();
+        }}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="practitioner">
               <Stethoscope className="mr-2 h-4 w-4" />
@@ -56,27 +129,49 @@ export default function LoginPage() {
                   Enter your email below to login to your account
                 </CardDescription>
               </CardHeader>
-              <form onSubmit={handleLogin}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email-practitioner">Email</Label>
-                    <Input id="email-practitioner" type="email" placeholder="m@example.com" required defaultValue="dr.anjali@ayurwell.com" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password-practitioner">Password</Label>
-                    <Input id="password-practitioner" type="password" required defaultValue="password" />
-                  </div>
-                </CardContent>
-                <CardFooter className="flex flex-col gap-4">
-                  <Button className="w-full" type="submit">Login</Button>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Don't have an account?{' '}
-                    <Link href="#" className="underline hover:text-primary">
-                      Register
-                    </Link>
-                  </p>
-                </CardFooter>
-              </form>
+              <Form {...practitionerForm}>
+                <form onSubmit={practitionerForm.handleSubmit(handleLogin)}>
+                  <CardContent className="space-y-4">
+                    <FormField
+                      control={practitionerForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="m@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={practitionerForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                  <CardFooter className="flex flex-col gap-4">
+                    <Button className="w-full" type="submit" disabled={isLoading}>
+                      {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Login'}
+                    </Button>
+                    <p className="text-xs text-center text-muted-foreground">
+                      Don't have an account?{' '}
+                      <Link href="#" className="underline hover:text-primary">
+                        Register
+                      </Link>
+                    </p>
+                  </CardFooter>
+                </form>
+              </Form>
             </Card>
           </TabsContent>
           <TabsContent value="patient">
@@ -87,31 +182,62 @@ export default function LoginPage() {
                   Enter your credentials and your doctor's ID to login
                 </CardDescription>
               </CardHeader>
-              <form onSubmit={handleLogin}>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-patient">Email</Label>
-                  <Input id="email-patient" type="email" placeholder="patient@example.com" required defaultValue="priya.sharma@example.com" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password-patient">Password</Label>
-                  <Input id="password-patient" type="password" required defaultValue="password" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="doctor-id">Doctor ID</Label>
-                  <Input id="doctor-id" type="text" placeholder="D12345" required defaultValue="D12345" />
-                </div>
-              </CardContent>
-              <CardFooter className="flex flex-col gap-4">
-                <Button className="w-full" type="submit">Login</Button>
-                <p className="text-xs text-center text-muted-foreground">
-                    Don't have an account?{' '}
-                    <Link href="#" className="underline hover:text-primary">
-                      Register
-                    </Link>
-                  </p>
-              </CardFooter>
-              </form>
+               <Form {...patientForm}>
+                <form onSubmit={patientForm.handleSubmit(handleLogin)}>
+                <CardContent className="space-y-4">
+                   <FormField
+                      control={patientForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="patient@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={patientForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={patientForm.control}
+                      name="doctorId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Doctor ID</FormLabel>
+                          <FormControl>
+                            <Input placeholder="D12345" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </CardContent>
+                <CardFooter className="flex flex-col gap-4">
+                  <Button className="w-full" type="submit" disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Login'}
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground">
+                      Don't have an account?{' '}
+                      <Link href="#" className="underline hover:text-primary">
+                        Register
+                      </Link>
+                    </p>
+                </CardFooter>
+                </form>
+              </Form>
             </Card>
           </TabsContent>
         </Tabs>
