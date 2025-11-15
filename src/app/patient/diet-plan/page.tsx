@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/card';
 import { dietPlan } from '@/lib/placeholder-data';
 import { Download, Printer, UtensilsCrossed, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
 const fullPlan = dietPlan; // Placeholder for full diet plan
 
@@ -30,9 +31,11 @@ export default function DietPlanPage() {
             <div className="flex gap-2">
                 <Button variant="outline"><Download className="mr-2" /> Download PDF</Button>
                 <Button variant="outline"><Printer className="mr-2" /> Print</Button>
-                 <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
-                    <Sparkles className="mr-2" />
-                    Regenerate Plan
+                 <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Link href="/patient/diet-plan/suggest">
+                        <Sparkles className="mr-2" />
+                        Suggest Alternatives
+                    </Link>
                 </Button>
             </div>
         </div>

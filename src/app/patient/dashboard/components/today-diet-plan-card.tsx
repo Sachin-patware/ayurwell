@@ -45,8 +45,8 @@ export function TodayDietPlanCard() {
           </Link>
         </Button>
         <Button asChild>
-          <Link href="/practitioner/diet-plans/generate">
-            <RefreshCw className="ml-2" /> Regenerate Diet Plan
+          <Link href="/patient/diet-plan/suggest">
+            <RefreshCw className="ml-2" /> Suggest Alternatives
           </Link>
         </Button>
       </CardFooter>
