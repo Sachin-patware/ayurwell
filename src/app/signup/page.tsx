@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/logo';
 import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { initiateEmailSignUp, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
+import { initiateGoogleSignIn } from '@/firebase/non-blocking-login';
 import {
   Form,
   FormControl,
@@ -36,7 +36,7 @@ const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email(),
   password: z.string().min(6, "Password must be at least 6 characters."),
-  role: z.enum(['patient', 'practitioner', 'admin'], { required_error: "Please select a role."}),
+  role: z.enum(['patient', 'practitioner'], { required_error: "Please select a role."}),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -180,7 +180,6 @@ export default function SignupPage() {
                         <SelectContent>
                           <SelectItem value="patient">Patient</SelectItem>
                           <SelectItem value="practitioner">Practitioner</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
