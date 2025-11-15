@@ -17,7 +17,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Logo } from '@/components/logo';
 import { useAuth } from '@/firebase';
@@ -71,33 +70,21 @@ export default function LoginPage() {
     },
   });
 
-  const handleLogin: SubmitHandler<PractitionerFormValues | PatientFormValues> = async (data) => {
+  const handleLogin: SubmitHandler<PractitionerFormValues | PatientFormValues> = (data) => {
     setIsLoading(true);
-    try {
-      initiateEmailSignIn(auth, data.email, data.password);
-      // Non-blocking, so we'll rely on onAuthStateChanged to redirect
-      // For now, let's keep the router push for immediate feedback
-      toast({
-        title: "Logging In...",
-        description: "You will be redirected shortly.",
-      });
-      // The redirection will be handled by a listener in a parent component
-      // but for now, we'll keep the manual push for demonstration
-       if (role === 'practitioner') {
-         setTimeout(() => router.push('/practitioner/dashboard'), 1000);
-       } else {
-         setTimeout(() => router.push('/patient/dashboard'), 1000);
-       }
+    initiateEmailSignIn(auth, data.email, data.password);
+    toast({
+      title: "Logging In...",
+      description: "You will be redirected shortly.",
+    });
 
-    } catch (error: any) {
-      console.error("Login failed:", error);
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: error.message || "An unknown error occurred.",
-      });
-      setIsLoading(false);
-    }
+    // The redirection will be handled by a listener in a parent component
+    // but for now, we'll keep the manual push for demonstration
+      if (role === 'practitioner') {
+        setTimeout(() => router.push('/practitioner/dashboard'), 1000);
+      } else {
+        setTimeout(() => router.push('/patient/dashboard'), 1000);
+      }
   };
   
   return (
