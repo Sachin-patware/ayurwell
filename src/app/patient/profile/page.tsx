@@ -151,6 +151,7 @@ export default function PatientProfilePage() {
             const photoURL = await getDownloadURL(imageRef);
 
             await updateProfile(user, { photoURL });
+            await user.reload(); // This is the crucial step to refresh the user object
             
             const userDocRef = doc(firestore, 'users', user.uid);
             setDocumentNonBlocking(userDocRef, { photoURL }, { merge: true });
