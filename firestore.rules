@@ -22,8 +22,8 @@ service cloud.firestore {
     
     function isDoctorForPatient(patientId) {
       let patient = get(/databases/$(database)/documents/patients/$(patientId)).data;
-      let doctor = get(/databases/$(database)/documents/doctors/$(request.auth.uid)).data;
-      return isSignedIn() && isRole('doctor') && patient.doctorId == doctor.doctorId;
+      // This assumes doctorId in the patient document is the doctor's UID
+      return isSignedIn() && isRole('doctor') && patient.doctorId == request.auth.uid;
     }
 
     // users - Public user data and roles
