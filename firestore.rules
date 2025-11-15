@@ -104,11 +104,12 @@ service cloud.firestore {
       allow create: if isOwner(request.resource.data.patientId);
       // The patient, their assigned doctor, or an admin can view appointments.
       allow get: if isOwner(resource.data.patientId) || isDoctorForPatient(resource.data.patientId) || isRole('admin');
+      // Patient can cancel, doctor can update status.
+      allow update: if isOwner(resource.data.patientId) || isDoctorForPatient(resource.data.patientId) || isRole('admin');
+      allow delete: if isRole('admin');
+
       // A patient can query for their own appointments. A doctor for their patients, an admin for all.
       allow list: if (isRole('patient') && request.query.where.patientId == request.auth.uid) || isRole('doctor') || isRole('admin');
-      // Patient can cancel, doctor can update status.
-      allow update: if isOwner(request.resource.data.patientId) || isDoctorForPatient(request.resource.data.patientId) || isRole('admin');
-      allow delete: if isRole('admin');
     }
 
     // dailyLogs - Patient's daily progress tracking
