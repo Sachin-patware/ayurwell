@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser } from "@/firebase";
@@ -19,17 +20,17 @@ export default function PatientDashboard() {
 
   return (
     <>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-headline">
+      <div className="mb-4">
+        <h1 className="text-3xl md:text-4xl font-bold font-headline">
           Welcome back, {patientName}!
         </h1>
-        <p className="text-muted-foreground">Here’s your wellness snapshot for today. Stay mindful and nourished.</p>
+        <p className="text-muted-foreground mt-1">Here’s your wellness snapshot for today. Stay mindful and nourished.</p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-3">
+      <div className="grid gap-8 lg:grid-cols-3 items-start">
 
         {/* Main Column */}
-        <div className="md:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-8">
           <TodayDietPlanCard />
           <TrackProgressCard />
         </div>
@@ -40,17 +41,19 @@ export default function PatientDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 font-headline text-xl">
                   <BookUser className="text-primary"/>
-                  My Constitution
+                  My Ayurvedic Profile
                 </CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-2 gap-4 text-center">
-                  <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Vikriti (Imbalance)</p>
-                      <Badge variant="secondary" className="text-md">{patient.dosha}</Badge>
+                  <div className="space-y-1 p-3 bg-muted/50 rounded-lg">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prakriti</p>
+                      <Badge variant="default" className="text-base font-bold px-3 py-1">{patient.prakriti}</Badge>
+                      <p className="text-xs text-muted-foreground">(Core Constitution)</p>
                   </div>
-                  <div className="space-y-1">
-                      <p className="text-sm text-muted-foreground">Prakriti (Core)</p>
-                      <Badge variant="default" className="text-md">{patient.prakriti}</Badge>
+                  <div className="space-y-1 p-3 bg-accent/10 rounded-lg">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Vikriti</p>
+                      <Badge variant="secondary" className="text-base font-bold px-3 py-1 border-accent/50">{patient.dosha}</Badge>
+                      <p className="text-xs text-muted-foreground">(Current Imbalance)</p>
                   </div>
               </CardContent>
             </Card>
@@ -59,21 +62,21 @@ export default function PatientDashboard() {
               <CardHeader>
                 <CardTitle className="font-headline flex items-center gap-2">
                   <Calendar />
-                  Consultation
+                  Consult Your Practitioner
                 </CardTitle>
-                 <CardDescription>Connect with your practitioner.</CardDescription>
+                 <CardDescription>Connect for follow-ups or advice.</CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-1 gap-4">
-                  <Button asChild variant="secondary" size="lg">
-                      <Link href="/patient/call"><Phone className="mr-2" />Call Doctor</Link>
-                  </Button>
                   <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                       <Link href="/patient/appointments">Book Appointment</Link>
+                  </Button>
+                  <Button asChild variant="outline" size="lg">
+                      <Link href="/patient/call"><Phone className="mr-2" />Quick Call</Link>
                   </Button>
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg rounded-2xl bg-primary/5">
+            <Card className="shadow-lg rounded-2xl bg-primary/5 border-primary/20">
               <CardHeader>
                 <CardTitle className="font-headline flex items-center gap-2 text-primary">
                   <Sparkles />
@@ -86,7 +89,6 @@ export default function PatientDashboard() {
               </CardContent>
             </Card>
         </div>
-
       </div>
     </>
   );
