@@ -45,17 +45,9 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
 
     return (
         <div className="flex min-h-screen w-full flex-col bg-background">
-            <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 z-10 shadow-sm">
+            <header className="sticky top-0 flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 z-10 shadow-sm">
                 <Logo />
-                <nav className="hidden md:flex items-center gap-4">
-                  {navItems.map(item => (
-                      <Button key={item.label} variant="ghost" asChild>
-                          <Link href={item.href}>{item.label}</Link>
-                      </Button>
-                  ))}
-                </nav>
-                <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-                    <div className="ml-auto flex-1 sm:flex-initial" />
+                <div className="flex items-center gap-4">
                      <Button variant="ghost" size="icon" className="rounded-full">
                         <Bell className="h-5 w-5" />
                         <span className="sr-only">Toggle notifications</span>
@@ -74,14 +66,14 @@ export default function PatientLayout({ children }: { children: ReactNode }) {
                             <DropdownMenuLabel>{userName}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                              {navItems.map(item => (
-                                <DropdownMenuItem key={item.label} asChild className="md:hidden">
+                                <DropdownMenuItem key={item.label} asChild>
                                     <Link href={item.href} className="flex items-center cursor-pointer">
                                         <item.icon className="mr-2 h-4 w-4" />
                                         <span>{item.label}</span>
                                     </Link>
                                 </DropdownMenuItem>
                             ))}
-                             <DropdownMenuSeparator className="md:hidden" />
+                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={handleLogout} className="flex items-center cursor-pointer text-destructive">
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Logout</span>
