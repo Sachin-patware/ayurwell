@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { BookCheck, Smile, Bed, Loader2 } from 'lucide-react';
+import { BookCheck, Smile, Droplets, Loader2, Bed } from 'lucide-react';
 import { useState } from 'react';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/input';
 const logSchema = z.object({
   sleepTime: z.coerce.number().min(0, "Sleep time can't be negative.").max(24, "Can't be more than 24 hours."),
   digestion: z.enum(['good', 'fair', 'poor']),
-  sleepQuality: z.enum(['good', 'fair', 'poor']),
+  waterIntake: z.coerce.number().min(0, "Water intake cannot be negative."),
 });
 
 type LogFormValues = z.infer<typeof logSchema>;
@@ -40,7 +40,7 @@ export default function DailyLog() {
     defaultValues: {
       sleepTime: 8,
       digestion: 'good',
-      sleepQuality: 'good',
+      waterIntake: 2,
     },
   });
 
@@ -98,7 +98,25 @@ export default function DailyLog() {
               name="sleepTime"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sleep Time (in hours)</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    <Bed className="h-4 w-4"/>
+                    Sleep Time (in hours)
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="waterIntake"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <Droplets className="h-4 w-4"/>
+                    Water Intake (in liters)
+                  </FormLabel>
                   <FormControl>
                     <Input type="number" {...field} />
                   </FormControl>
@@ -131,38 +149,6 @@ export default function DailyLog() {
                       <FormItem className="flex items-center space-x-2">
                         <FormControl><RadioGroupItem value="poor" id="d3" /></FormControl>
                         <FormLabel htmlFor="d3" className="font-normal">Poor</FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="sleepQuality"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Bed className="h-4 w-4" />
-                    Sleep Quality
-                  </FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                       onValueChange={field.onChange}
-                       value={field.value}
-                       className="flex gap-4"
-                    >
-                       <FormItem className="flex items-center space-x-2">
-                        <FormControl><RadioGroupItem value="good" id="s1" /></FormControl>
-                        <FormLabel htmlFor="s1" className="font-normal">Good</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl><RadioGroupItem value="fair" id="s2" /></FormControl>
-                        <FormLabel htmlFor="s2" className="font-normal">Fair</FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl><RadioGroupItem value="poor" id="s3" /></FormControl>
-                        <FormLabel htmlFor="s3" className="font-normal">Poor</FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>

@@ -125,9 +125,9 @@
         "date": { "type": "string", "format": "date-time" },
         "sleepTime": { "type": "number", "description": "Hours of sleep." },
         "digestion": { "type": "string", "enum": ["good", "fair", "poor"] },
-        "sleepQuality": { "type": "string", "enum": ["good", "fair", "poor"] }
+        "waterIntake": { "type": "number", "description": "Water intake in liters." }
       },
-      "required": ["userId", "date", "sleepTime", "digestion", "sleepQuality"]
+      "required": ["userId", "date", "sleepTime", "digestion", "waterIntake"]
     }
   },
   "auth": {

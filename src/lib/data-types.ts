@@ -34,5 +34,5 @@ export type DailyLog = {
   date: string; // ISO 8601 format
   sleepTime: number; // in hours
   digestion: 'good' | 'fair' | 'poor';
-  sleepQuality: 'good' | 'fair' | 'poor';
+  waterIntake: number; // in liters
 };
