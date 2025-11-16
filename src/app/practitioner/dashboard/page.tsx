@@ -1,6 +1,9 @@
+'use client';
+
 import {
   Activity,
   CalendarCheck,
+  Loader2,
   PlusCircle,
   Users,
 } from 'lucide-react';
@@ -21,13 +24,27 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { appointments, patients } from '@/lib/placeholder-data';
+import { patients } from '@/lib/placeholder-data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useUser } from '@/firebase';
+import { usePractitionerAppointments } from '@/hooks/useAppointments';
+import { format } from 'date-fns';
 
 export default function PractitionerDashboard() {
+  const { user } = useUser();
+  const { appointments, isLoading } = usePractitionerAppointments(user?.uid);
   const patientAvatars = new Map(PlaceHolderImages.filter(img => img.id.startsWith('avatar')).map(img => [img.id, img]));
+  
+  const todaysAppointments = appointments?.filter(a => {
+    const today = new Date();
+    const apptDate = a.startTimestamp.toDate();
+    return apptDate.getDate() === today.getDate() &&
+           apptDate.getMonth() === today.getMonth() &&
+           apptDate.getFullYear() === today.getFullYear();
+  }) || [];
+
 
   return (
     <div className="space-y-6">
@@ -63,10 +80,14 @@ export default function PractitionerDashboard() {
             <CalendarCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{appointments.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {appointments.filter(a => a.status === 'Pending').length} pending confirmation
-            </p>
+             {isLoading ? <Loader2 className="h-6 w-6 animate-spin"/> : (
+                <>
+                    <div className="text-2xl font-bold">{todaysAppointments.length}</div>
+                    <p className="text-xs text-muted-foreground">
+                        {appointments?.filter(a => a.status === 'scheduled').length} total upcoming
+                    </p>
+                </>
+             )}
           </CardContent>
         </Card>
         <Card className="shadow-sm hover:shadow-md transition-shadow">
@@ -93,36 +114,49 @@ export default function PractitionerDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Patient</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {appointments.map((appointment) => (
-                  <TableRow key={appointment.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage src={patientAvatars.get(appointment.patient.avatar)?.imageUrl} />
-                            <AvatarFallback>{appointment.patient.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium">{appointment.patient.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{appointment.time}</TableCell>
-                    <TableCell>
-                      <Badge variant={appointment.status === 'Confirmed' ? 'default' : 'secondary'} className={appointment.status === 'Confirmed' ? 'bg-primary/80 text-primary-foreground' : ''}>
-                        {appointment.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            {isLoading ? (
+                <div className="flex justify-center items-center h-48">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            ) : (
+                <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead>Patient</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Status</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {todaysAppointments.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={3} className="text-center text-muted-foreground h-24">
+                                No appointments scheduled for today.
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                        todaysAppointments.map((appointment) => (
+                        <TableRow key={appointment.id}>
+                            <TableCell>
+                            <div className="flex items-center gap-2">
+                                <Avatar className="h-8 w-8">
+                                    <AvatarFallback>{appointment.patientName?.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <span className="font-medium">{appointment.patientName}</span>
+                            </div>
+                            </TableCell>
+                            <TableCell>{format(appointment.startTimestamp.toDate(), 'p')}</TableCell>
+                            <TableCell>
+                            <Badge variant={appointment.status === 'scheduled' ? 'default' : 'secondary'} className={appointment.status === 'scheduled' ? 'bg-primary/80 text-primary-foreground' : ''}>
+                                {appointment.status}
+                            </Badge>
+                            </TableCell>
+                        </TableRow>
+                        ))
+                    )}
+                </TableBody>
+                </Table>
+            )}
           </CardContent>
         </Card>
         <Card className="shadow-sm">

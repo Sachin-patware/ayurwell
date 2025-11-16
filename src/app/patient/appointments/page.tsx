@@ -2,31 +2,35 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, PlusCircle, Loader2 } from "lucide-react";
+import { Calendar, Loader2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase";
-import { collection, query, where, orderBy } from "firebase/firestore";
+import { useUser, useFirestore, updateDocumentNonBlocking } from "@/firebase";
+import { doc } from "firebase/firestore";
 import type { Appointment } from "@/lib/data-types";
 import { format } from 'date-fns';
 import { BookAppointmentDialog } from "./components/book-appointment-dialog";
+import { usePatientAppointments } from "@/hooks/useAppointments";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AppointmentsPage() {
     const { user } = useUser();
+    const { appointments, isLoading, error } = usePatientAppointments(user?.uid);
     const firestore = useFirestore();
+    const { toast } = useToast();
 
-    const appointmentsQuery = useMemoFirebase(() => {
-        if (!user || !firestore) return null;
-        return query(
-            collection(firestore, 'appointments'),
-            where('patientId', '==', user.uid),
-            orderBy('datetime', 'desc')
-        );
-    }, [user, firestore]);
+    const handleCancel = (appointmentId: string) => {
+        if (!user || !firestore) return;
+        
+        const appointmentRef = doc(firestore, 'appointments', appointmentId);
+        updateDocumentNonBlocking(appointmentRef, { status: 'cancelled' });
+        toast({
+            title: "Appointment Cancelled",
+            description: "Your appointment has been cancelled.",
+        })
+    };
 
-    const { data: appointments, isLoading, error } = useCollection<Appointment>(appointmentsQuery);
-
-    const upcomingAppointments = appointments?.filter(a => new Date(a.datetime) >= new Date() && a.status === 'scheduled') || [];
-    const pastAppointments = appointments?.filter(a => new Date(a.datetime) < new Date() || a.status !== 'scheduled') || [];
+    const upcomingAppointments = appointments?.filter(a => a.status === 'scheduled') || [];
+    const pastAppointments = appointments?.filter(a => a.status !== 'scheduled') || [];
 
     return (
         <div>
@@ -52,7 +56,7 @@ export default function AppointmentsPage() {
                     ) : error ? (
                         <div className="text-destructive text-center p-8 bg-destructive/10 rounded-lg">
                             <p className="font-semibold">Error Loading Appointments</p>
-                            <p className="text-sm">Could not load your appointments due to a permission issue. Please contact support.</p>
+                            <p className="text-sm">Could not load your appointments. Please try again later.</p>
                              <p className="text-xs mt-2 text-red-700">{error.message}</p>
                         </div>
                     ) : (
@@ -62,7 +66,7 @@ export default function AppointmentsPage() {
                                 {upcomingAppointments.length > 0 ? (
                                     <div className="space-y-4">
                                         {upcomingAppointments.map(appointment => (
-                                            <AppointmentCard key={appointment.id} appointment={appointment} />
+                                            <AppointmentCard key={appointment.id} appointment={appointment} onCancel={handleCancel} />
                                         ))}
                                     </div>
                                 ) : (
@@ -90,7 +94,7 @@ export default function AppointmentsPage() {
     );
 }
 
-function AppointmentCard({ appointment }: { appointment: Appointment }) {
+function AppointmentCard({ appointment, onCancel }: { appointment: Appointment, onCancel?: (id: string) => void }) {
     const isUpcoming = appointment.status === 'scheduled';
     
     const statusVariant: "default" | "secondary" | "destructive" = 
@@ -101,15 +105,19 @@ function AppointmentCard({ appointment }: { appointment: Appointment }) {
     return (
         <Card className={`p-4 flex justify-between items-center ${!isUpcoming ? 'bg-muted/50' : ''}`}>
             <div>
-                <p className="font-semibold">{appointment.title || "Consultation"}</p>
-                <p className="text-sm text-muted-foreground">With {appointment.doctorName}</p>
+                <p className="font-semibold">{appointment.doctorName || "Consultation"}</p>
                 <p className={`text-sm font-bold mt-1 ${isUpcoming ? 'text-primary' : 'text-muted-foreground'}`}>
-                    {format(new Date(appointment.datetime), "MMMM dd, yyyy 'at' hh:mm a")}
+                    {appointment.startTimestamp ? format(appointment.startTimestamp.toDate(), "MMMM dd, yyyy 'at' hh:mm a") : 'Date not set'}
                 </p>
             </div>
             <div className="flex items-center gap-4">
                 <Badge variant={statusVariant}>{appointment.status}</Badge>
-                {isUpcoming && <Button variant="outline" size="sm">Cancel</Button>}
+                {isUpcoming && onCancel && 
+                    <Button variant="outline" size="sm" onClick={() => onCancel(appointment.id)}>
+                        <XCircle className="mr-2 h-4 w-4"/>
+                        Cancel
+                    </Button>
+                }
             </div>
         </Card>
     );

@@ -5,28 +5,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Calendar, MoreHorizontal, Loader2, CheckCircle, XCircle } from "lucide-react";
-import { useCollection, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase";
-import { collection, query, where, orderBy, doc } from "firebase/firestore";
+import { useUser, useFirestore, updateDocumentNonBlocking } from "@/firebase";
+import { doc } from "firebase/firestore";
 import type { Appointment } from "@/lib/data-types";
 import { format } from 'date-fns';
+import { usePractitionerAppointments } from "@/hooks/useAppointments";
+import { useToast } from "@/hooks/use-toast";
 
 export default function PractitionerAppointmentsPage() {
     const { user } = useUser();
+    const { toast } = useToast();
     const firestore = useFirestore();
 
-    const appointmentsQuery = useMemoFirebase(() => {
-        if (!user || !firestore) return null;
-        // The doctorId in the appointments collection should be the same as the doctor's user ID (uid).
-        // This query now matches the security rule `where('doctorId', '==', request.auth.uid)`.
-        return query(
-            collection(firestore, 'appointments'),
-            where('doctorId', '==', user.uid),
-            orderBy('datetime', 'desc')
-        );
-    }, [user, firestore]);
-
-    const { data: appointments, isLoading, error } = useCollection<Appointment>(appointmentsQuery);
-
+    const { appointments, isLoading, error } = usePractitionerAppointments(user?.uid);
+    
     const upcomingAppointments = appointments?.filter(a => a.status === 'scheduled') || [];
     const pastAppointments = appointments?.filter(a => a.status !== 'scheduled') || [];
 
@@ -34,6 +26,10 @@ export default function PractitionerAppointmentsPage() {
         if (!firestore) return;
         const appointmentRef = doc(firestore, 'appointments', appointmentId);
         updateDocumentNonBlocking(appointmentRef, { status });
+        toast({
+            title: `Appointment ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+            description: `The appointment has been marked as ${status}.`
+        })
     };
 
     return (
@@ -64,13 +60,13 @@ export default function PractitionerAppointmentsPage() {
                             <TableBody>
                                 {upcomingAppointments.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center text-muted-foreground">No upcoming appointments.</TableCell>
+                                        <TableCell colSpan={4} className="text-center text-muted-foreground h-24">No upcoming appointments.</TableCell>
                                     </TableRow>
                                 )}
                                 {upcomingAppointments.map(appointment => (
                                     <TableRow key={appointment.id}>
                                         <TableCell className="font-medium">{appointment.patientName}</TableCell>
-                                        <TableCell>{format(new Date(appointment.datetime), "PPP p")}</TableCell>
+                                        <TableCell>{appointment.startTimestamp ? format(appointment.startTimestamp.toDate(), "PPP p") : 'N/A'}</TableCell>
                                         <TableCell><Badge>{appointment.status}</Badge></TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
@@ -103,8 +99,8 @@ export default function PractitionerAppointmentsPage() {
                 </CardHeader>
                 <CardContent>
                      {isLoading && <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary"/></div>}
-                    {!isLoading && pastAppointments.length > 0 && (
-                        <Table>
+                    {!isLoading && !error && (
+                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Patient</TableHead>
@@ -113,10 +109,15 @@ export default function PractitionerAppointmentsPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
+                                {pastAppointments.length === 0 && (
+                                     <TableRow>
+                                        <TableCell colSpan={3} className="text-center text-muted-foreground h-24">No appointment history.</TableCell>
+                                    </TableRow>
+                                )}
                                 {pastAppointments.map(appointment => (
                                     <TableRow key={appointment.id} className="bg-muted/50">
                                         <TableCell>{appointment.patientName}</TableCell>
-                                        <TableCell>{format(new Date(appointment.datetime), "PPP p")}</TableCell>
+                                        <TableCell>{appointment.startTimestamp ? format(appointment.startTimestamp.toDate(), "PPP p") : 'N/A'}</TableCell>
                                         <TableCell>
                                             <Badge variant={appointment.status === 'completed' ? 'secondary' : 'destructive'}>
                                                 {appointment.status}
@@ -126,9 +127,6 @@ export default function PractitionerAppointmentsPage() {
                                 ))}
                             </TableBody>
                         </Table>
-                    )}
-                    {!isLoading && !error && pastAppointments.length === 0 && (
-                        <p className="text-center text-muted-foreground py-8">No appointment history.</p>
                     )}
                 </CardContent>
             </Card>

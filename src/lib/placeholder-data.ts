@@ -9,7 +9,7 @@ export type Patient = {
   dosha: string;
 };
 
-export type Appointment = {
+export type AppointmentPlaceholder = {
   id: string;
   time: string;
   patient: Pick<Patient, 'id' | 'name' | 'avatar'>;
@@ -56,26 +56,8 @@ export const patients: Patient[] = [
   },
 ];
 
-export const appointments: Appointment[] = [
-  {
-    id: 'apt1',
-    time: '09:00 AM',
-    patient: { id: '1', name: 'Priya Sharma', avatar: 'avatar-1' },
-    status: 'Confirmed',
-  },
-  {
-    id: 'apt2',
-    time: '11:30 AM',
-    patient: { id: '2', name: 'Rohan Gupta', avatar: 'avatar-2' },
-    status: 'Confirmed',
-  },
-  {
-    id: 'apt3',
-    time: '02:00 PM',
-    patient: { id: '3', name: 'Anika Reddy', avatar: 'avatar-3' },
-    status: 'Pending',
-  },
-];
+// No longer providing static appointments data.
+// It will be fetched from Firestore.
 
 export const dietPlan = {
   monday: [

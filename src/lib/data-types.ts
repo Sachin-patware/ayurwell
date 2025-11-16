@@ -1,3 +1,5 @@
+import type { Timestamp } from "firebase/firestore";
+
 export type Patient = {
   id: string;
   name: string;
@@ -16,9 +18,12 @@ export type Appointment = {
   patientName?: string;
   doctorId: string;
   doctorName?: string;
-  datetime: string; // ISO 8601 format
+  datetime: string; // Kept for old refs, but new logic will use timestamps
+  startTimestamp: Timestamp;
+  endTimestamp: Timestamp;
   status: 'scheduled' | 'completed' | 'cancelled';
-  createdAt: string;
+  notes?: string;
+  createdAt: Timestamp;
 };
 
 export type DietPlanSummary = {
@@ -36,3 +41,9 @@ export type DailyLog = {
   digestion: 'good' | 'fair' | 'poor';
   waterIntake: number; // in liters
 };
+
+export type DoctorProfile = {
+    id: string;
+    name: string;
+    specialization: string;
+}
