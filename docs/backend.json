@@ -123,11 +123,11 @@
         "logId": { "type": "string" },
         "userId": { "type": "string", "description": "The patient's user ID." },
         "date": { "type": "string", "format": "date-time" },
-        "energyLevel": { "type": "number", "description": "Energy level from 1-10." },
+        "sleepTime": { "type": "number", "description": "Hours of sleep." },
         "digestion": { "type": "string", "enum": ["good", "fair", "poor"] },
         "sleepQuality": { "type": "string", "enum": ["good", "fair", "poor"] }
       },
-      "required": ["userId", "date", "energyLevel", "digestion", "sleepQuality"]
+      "required": ["userId", "date", "sleepTime", "digestion", "sleepQuality"]
     }
   },
   "auth": {

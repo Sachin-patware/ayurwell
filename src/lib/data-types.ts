@@ -32,7 +32,7 @@ export type DailyLog = {
   id?: string;
   userId: string;
   date: string; // ISO 8601 format
-  energyLevel: number; // 1-10
+  sleepTime: number; // in hours
   digestion: 'good' | 'fair' | 'poor';
   sleepQuality: 'good' | 'fair' | 'poor';
 };

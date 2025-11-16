@@ -13,16 +13,16 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { BookCheck, Smile, Bed, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { Slider } from '@/components/ui/slider';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
 const logSchema = z.object({
-  energyLevel: z.number().min(1).max(10),
+  sleepTime: z.coerce.number().min(0, "Sleep time can't be negative.").max(24, "Can't be more than 24 hours."),
   digestion: z.enum(['good', 'fair', 'poor']),
   sleepQuality: z.enum(['good', 'fair', 'poor']),
 });
@@ -38,7 +38,7 @@ export default function DailyLog() {
   const form = useForm<LogFormValues>({
     resolver: zodResolver(logSchema),
     defaultValues: {
-      energyLevel: 5,
+      sleepTime: 8,
       digestion: 'good',
       sleepQuality: 'good',
     },
@@ -95,18 +95,12 @@ export default function DailyLog() {
           <CardContent className="grid gap-6 p-0">
             <FormField
               control={form.control}
-              name="energyLevel"
-              render={({ field: { value, onChange } }) => (
+              name="sleepTime"
+              render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Energy Level ({value})</FormLabel>
+                  <FormLabel>Sleep Time (in hours)</FormLabel>
                   <FormControl>
-                    <Slider
-                      value={[value]}
-                      onValueChange={(vals) => onChange(vals[0])}
-                      max={10}
-                      step={1}
-                      min={1}
-                    />
+                    <Input type="number" {...field} />
                   </FormControl>
                 </FormItem>
               )}
